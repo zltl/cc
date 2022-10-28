@@ -620,3 +620,119 @@
   (n_vec :int))
 
 ;; end event2/buffer.h
+
+
+;; begin event2/bufferevent.h
+
+
+(defvar *BEV-EVENT-READING* #x01)
+(defvar *BEV-EVENT-WRITING* #x02)
+(defvar *BEV-EVENT-EOF* #x10)
+(defvar *BEV-EVENT-ERROR* #x20)
+(defvar *BEV-EVENT-TIMEOUT* #x40)
+(defvar *BEV-EVENT-CONNECTED* #x80)
+
+(defvar *BEV-OPT-CLOSE-ON-FREE* #x01)
+(defvar *BEV-OPT-THREADSAFE* #x02)
+(defvar *BEV-OPT-DEFFER-CALLBACKS* #x04)
+(defvar *BEV-OPT-UNLOCK-CALLBACKS* #x08)
+
+
+(defcfun (bufferevent-socket-new "bufferevent_socket_new") :pointer
+  (base :pointer)
+  (fd :int)
+  (options :int))
+
+(defcfun (bufferevent-socket-connect "bufferevent_socket_connect") :int
+  (bufev :pointer)
+  (addr :pointer)
+  (socklen :int))
+
+(defcfun (bufferevent-socket-connect-hostname
+	  "bufferevent_socket_connect_hostname")
+  :int
+  (bufev :pointer)
+  (evdns_base :pointer)
+  (family :int)
+  (hostname :pointer)
+  (port :int))
+
+(defcfun (bufferevent-socket-get-dns-error
+	  "bufferevent_socket_get_dns_error")
+  :int
+  (bev :pointer))
+
+(defcfun (bufferevent-base-set "bufferevent_base_set") :int
+  (base :pointer)
+  (bufev :pointer))
+
+(defcfun (bufferevent-get-base "bufferevent_get_base") :pointer
+  (bev :pointer))
+
+(defcfun (bufferevent-priority-set "bufferevent_priority_set") :int
+  (bufev :pointer)
+  (pri :int))
+
+(defcfun (bufferevent-get-priority "bufferevent_get_priority") :int
+  (bufev :pointer))
+
+(defcfun (bufferevent-free "bufferevent_free") :void)
+
+(defcfun (bufferevent-setcb "bufferevent_setcb") :void
+  (bufev :pointer)
+  (readcb :pointer)
+  (writecb :pointer)
+  (eventcb :pointer)
+  (cbarg :pointer))
+
+(defcfun (bufferevent-getcb "bufferevent_getcb") :void
+  (bufev :pointer)
+  (readcb_ptr :pointer)
+  (writecb_ptr :pointer)
+  (eventcb_port :pointer)
+  (cbarg_ptr :pointer))
+
+
+(defcfun (bufferevent-setfd "bufferevent_setfd") :int
+  (bufev :pointer)
+  (fd :int))
+
+(defcfun (bufferevent-getfd "bufferevent_getfd") :int
+  (bufev :pointer))
+
+(defcfun (bufferevent-get-underlying "bufferevent_get_underlying") :pointer
+  (bufev :pointer))
+
+(defcfun (bufferevent-write "bufferevent_write") :int
+  (bufev :pointer)
+  (data :pointer)
+  (size :size))
+
+(defcfun (bufferevent-write-buffer "bufferevent_write_buffer") :int
+  (bufev :pointer)
+  (buf :pointer))
+
+(defcfun (bufferevent-read "bufferevent_read") :size
+  (bufev :pointer)
+  (data :pointer)
+  (size :size))
+
+(defcfun (bufferevent-read-buffer "bufferevent_read_buffer") :int
+  (bufev :pointer)
+  (buf :pointer))
+
+(defcfun (bufferevent-get-input "bufferevent_get_input") :pointer
+  (bufev :pointer))
+
+(defcfun (bufferevent-get-output "bufferevent_get_output") :pointer
+  (bufev :pointer))
+(defcfun (bufferevent-enable "bufferevent_enable") :int
+  (bufev :pointer)
+  (event :short))
+
+(defcfun (bufferevent-disable "bufferevent_disable") :int
+  (bufev :pointer)
+  (event :short))
+
+
+
