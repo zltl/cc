@@ -5,7 +5,7 @@ LISP ?= sbcl
 all: test
 
 run:
-	rlwrap $(LISP) --load run.lisp
+	$(LISP) --load run.lisp
 
 build:
 	$(LISP)	--non-interactive \

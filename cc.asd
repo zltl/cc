@@ -10,14 +10,16 @@
   :source-control (:git "git@github.com:zltl/cc.git")
 
   ;; Dependencies.
-  :depends-on ()
+  :depends-on (:cffi
+	       :cl-autowrap/libffi)
 
   ;; Project stucture.
   :serial t
   :components ((:module "src"
                         :serial t
                         :components ((:file "packages")
-                                     (:file "cc"))))
+                                     (:file "cc")
+				     (:file "event"))))
 
   ;; Build a binary:
   ;; don't change this line.
