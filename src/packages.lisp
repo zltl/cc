@@ -103,6 +103,78 @@
    :event-base-foreach-event
    :event-base-gettimeofday-cached
    :event-base-update-cache-time
-   :libevent-global-shutdown   
+   :libevent-global-shutdown
+
+   ;; threads
+   :*EVTHREAD-WRITE*
+   :*EVTHREAD-READ*
+   :*EVTHREAD-TRY*
+   :*EVTHREAD-LOCKTYPE-RECURSIVE*
+   :*EVTHREAD-LOCKTYPE-READWRIT*
+   :evthread-set-lock-callbacks
+   :evthread-set-condition-callbacks
+   :evthread-set-id-callback
+   :evthread-use-pthreads
+   :evthread-enable-lock-debugging
+   :evthread-make-base-notifiable
+
+   ;; buffer
+   :evbuffer-iovec
+   :evbuffer-free
+   :evbuffer-new
+   :evbuffer-enable-locking
+   :evbuffer-lock
+   :evbuffer-unlock
+   :*EVBUFFER-FLAG-DRAINS-TO-FD*
+   :evbuffer-set-flags
+   :evbuffer-clear-flags
+   :evbuffer-get-length
+   :evbuffer-get-contiguous-space
+   :evbuffer-expand
+   :evbuffer-reserve-space
+   :evbuffer-commit-space
+   :evbuffer-add
+   :evbuffer-remove
+   :evbuffer-copyout
+   :evbuffer-copyout-from
+   :evbuffer-remove-buffer
+   :evbuffer-eol-style
+   :evbuffer-readln
+   :evbuffer-add-buffer
+   :evbuffer-add-buffer-reference
+   :evbuffer-add-reference
+   :evbuffer-add-file
+   :evbuffer-file-segment-new
+   :evbuffer-file-segment-free
+   :evbuffer-file-segment-add-cleanup-cb
+   :evbuffer-add-file-segment
+   :evbuffer-add-printf
+   :evbuffer-add-vprintf
+   :evbuffer-drain
+   :evbuffer-write
+   :evbuffer-write-atmost
+   :evbuffer-ptr
+   :evbuffer-read
+   :evbuffer-search
+   :evbuffer-search-range
+   :evbuffer-ptr-how
+   :evbuffer-ptr-set
+   :evbuffer-search-eol
+   :evbuffer-peek
+   :evbuffer-cb-info
+   :evbuffer-add-cb
+   :evbuffer-remove-cb-entry
+   :evbuffer-remove-cb
+   :evbuffer-cb-set-flags
+   :evbuffer-cb-clear-flags
+   :evbuffer-pullup
+   :evbuffer-prepend
+   :evbuffer-prepend-buffer
+   :evbuffer-freeze
+   :evbuffer-unfreeze
+   :evbuffer-defer-callbacks
+   :evbuffer-add-iovec
+
+   ;; ...
    ))
 

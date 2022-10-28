@@ -28,6 +28,7 @@
 (use-foreign-library libevent_pthreads)
 
 
+;; begin /event2/event.h
 (defcfun (event-enable-debug-mode "event_enable_debug_mode") :void)
 (defcfun (event-debug-unassign "event_debug_unassign") :void
   (event :pointer))
@@ -321,6 +322,301 @@
 
 (defcfun (libevent-global-shutdown "libevent_global_shutdown") :void)
 
-(defun ev ()
-  (defparameter *ev-version* (event-get-version)))
+;; end event2/event.h
 
+
+;; begin event2/thread.h
+
+(defvar *EVTHREAD-WRITE* #x04)
+(defvar *EVTHREAD-READ* #x08)
+(defvar *EVTHREAD-TRY* #x10)
+
+(defvar *EVTHREAD-LOCKTYPE-RECURSIVE* 1)
+(defvar *EVTHREAD-LOCKTYPE-READWRIT* 2)
+
+(defcfun (evthread-set-lock-callbacks "evthread_set_lock_callbacks") :int
+  (cbs :pointer))
+
+(defcfun (evthread-set-condition-callbacks "evthread_set_condition_callbacks")
+  :int
+  (cbs :pointer))
+
+;; TODO: defcstruct callback structs
+
+(defcfun (evthread-set-id-callback "evthread_set_id_callback") :void
+  (id_fn :pointer))
+
+(defcfun (evthread-use-pthreads "evthread_use_pthreads") :int)
+(defcfun (evthread-enable-lock-debugging "evthread_enable_lock_debugging")
+  :void)
+
+(defcfun (evthread-make-base-notifiable "evthread_make_base_notifiable")
+  :int
+  (base :pointer))
+
+;; end event2/thread.h
+
+
+;; begin event2/buffer.h
+
+(defcstruct evbuffer-iovec
+  (iov_base :pointer)
+  (iov_len :size))
+(defcfun (evbuffer-free "evbuffer_free") :void
+  (buf :pointer))
+(defcfun (evbuffer-new "evbuffer_new") :pointer)
+(defcfun (evbuffer-enable-locking "evbuffer_enable_locking") :int
+  (buf :pointer)
+  (lock :pointer))
+(defcfun (evbuffer-lock "evbuffer_lock") :void
+  (buf :pointer))
+(defcfun (evbuffer-unlock "evbuffer_unlock") :void
+  (buf :pointer))
+
+(defvar *EVBUFFER-FLAG-DRAINS-TO-FD* 1)
+
+(defcfun (evbuffer-set-flags "evbuffer_set_flags") :int
+  (buf :pointer)
+  (flags :uint64))
+
+(defcfun (evbuffer-clear-flags "evbuffer_clear_flags") :int
+  (buf :pointer)
+  (flags :uint64))
+
+(defcfun (evbuffer-get-length "evbuffer_get_length") :size
+  (buf :pointer))
+
+(defcfun (evbuffer-get-contiguous-space "evbuffer_get_contiguous_space")
+  :size
+  (buf :pointer))
+(defcfun (evbuffer-expand "evbuffer_expand") :int
+  (buf :pointer)
+  (datlen :size))
+(defcfun (evbuffer-reserve-space "evbuffer_reserve_space") :int
+  (buf :pointer)
+  (size :size)
+  (vec :pointer))
+
+(defcfun (evbuffer-commit-space "evbuffer_commit_space") :int
+  (buf :pointer)
+  (vec :pointer)
+  (n_vecs :int))
+
+(defcfun (evbuffer-add "evbuffer_add") :int
+  (buf :pointer)
+  (data :pointer)
+  (datlen :size))
+
+(defcfun (evbuffer-remove "evbuffer_remove") :int
+  (buf :pointer)
+  (data :pointer)
+  (dattlen :size))
+
+(defcfun (evbuffer-copyout "evbuffer_copyout") :ssize
+  (buf :pointer)
+  (data_out :pointer)
+  (datlen :size))
+
+(defcfun (evbuffer-copyout-from "evbuffer_copyout_from") :ssize
+  (buf :pointer)
+  (pos :pointer)
+  (data_out :pointer)
+  (datlen :size))
+
+(defcfun (evbuffer-remove-buffer "evbuffer_remove_buffer") :int
+  (src :pointer)
+  (dst :pointer)
+  (datlen :size))
+
+(defcenum evbuffer-eol-style
+  :EVBUFFER-EOL-ANY
+  :EVBUFFER-EOL-CRLF
+  :EVBUFFER-EOL-CRLF_STRICT
+  :EVBUFFER-EOL-LF
+  :EVBUFFER-EOL-NUL)
+
+(defcfun (evbuffer-readln "evbuffer_readln") :pointer
+  (buffer :pointer)
+  (n_read_out :pointer)
+  (eol_style evbuffer-eol-style))
+
+(defcfun (evbuffer-add-buffer "evbuffer_add_buffer") :int
+  (outbuf :pointer)
+  (evbuffer :pointer))
+
+(defcfun (evbuffer-add-buffer-reference "evbuffer_add_buffer_reference")
+  :int
+  (outbuf :pointer)
+  (inbuf :pointer))
+
+(defcfun (evbuffer-add-reference "evbuffer_add_reference") :int
+  (outbuf :pointer)
+  (data :pointer)
+  (datlen :pointer)
+  (cleanupfn :pointer)
+  (cleanupfn_arg :pointer))
+
+(defcfun (evbuffer-add-file "evbuffer_add_file") :int
+  (outbuf :pointer)
+  (fd :int)
+  (offset :offset)
+  (length :offset))
+
+(defvar *EVBUF-FS-CLOSE-ON-FREE* #x01)
+(defvar *EVBUF-FS-DISABLE-MMAP* #x02)
+(defvar *EVBUF-FS-DISABLE-SENDFILE* #x04)
+(defvar *EVBUF-FS-DISABLE-LOCKING* #x08)
+
+
+(defcfun (evbuffer-file-segment-new "evbuffer_file_segment_new") :pointer
+  (fd :int)
+  (offset :offset)
+  (length :offset)
+  (flags :uint))
+
+
+(defcfun (evbuffer-file-segment-free "evbuffer_file_segment_free") :void
+  (set :pointer))
+
+(defcfun (evbuffer-file-segment-add-cleanup-cb
+	  "evbuffer_file_segment_add_cleanup_cb")
+  :void
+  (seg :pointer)
+  (cb :pointer)
+  (arg :pointer))
+
+(defcfun (evbuffer-add-file-segment "evbuffer_add_file_segment") :int
+  (buf :pointer)
+  (seg :pointer)
+  (offset :offset)
+  (length :offset))
+
+(defcfun (evbuffer-add-printf "evbuffer_add_printf") :int
+  (buf :pointer)
+  (fmt :pointer)
+  &rest)
+
+(defcfun (evbuffer-add-vprintf "evbuffer_add_vprintf") :int
+  (buf :pointer)
+  (fmt :pointer)
+  (ap :pointer)) ;; TODO
+
+
+(defcfun (evbuffer-drain "evbuffer_drain") :int (buf :pointer) (len :size))
+
+(defcfun (evbuffer-write "evbuffer-write") :int (buf :pointer) (fd :int))
+
+(defcfun (evbuffer-write-atmost "evbuffer_write_atmost") :int
+  (buffer :pointer)
+  (fd :int)
+  (howmuch :ssize))
+
+(defcunion evbuffer-ptr-internal
+  (chain :pointer)
+  (pos_in_chain :size))
+(defcstruct evbuffer-ptr
+  (pos :ssize)
+  (internal_ evbuffer-ptr-internal))
+
+(defcfun (evbuffer-read "evbuffer_read") :int
+  (buf :pointer)
+  (fd :int)
+  (howmuch :int))
+
+(defcfun (evbuffer-search "evbuffer_search") evbuffer-ptr
+  (buffer :pointer)
+  (what :pointer)
+  (len :size)
+  (start :pointer))
+
+(defcfun (evbuffer-search-range "evbuffer_search_range") evbuffer-ptr
+  (buffer :pointer)
+  (what :pointer)
+  (len :size)
+  (start :pointer)
+  (end :pointer))
+
+(defcenum evbuffer-ptr-how
+  :EVBUFFER-PTR-SET
+  :EVBUFFER-PTR-ADD)
+
+
+(defcfun (evbuffer-ptr-set "evbuffer_ptr_set") :int
+  (buffer :pointer)
+  (ptr :pointer)
+  (position :size)
+  (how evbuffer-ptr-how))
+
+(defcfun (evbuffer-search-eol "evbuffer_search_eol") evbuffer-ptr
+  (buffer :pointer)
+  (start :pointer)
+  (eol_len_out :pointer)
+  (eol_style evbuffer-eol-style))
+
+(defcfun (evbuffer-peek "evbuffer_peek") :int
+  (buffer :pointer)
+  (len :ssize)
+  (start_at :pointer)
+  (vec_out :pointer)
+  (n_vec :int))
+
+(defcstruct evbuffer-cb-info
+  (orig_size :size)
+  (n_added :size)
+  (n_deleted :size))
+
+(defcfun (evbuffer-add-cb "evbuffer_add_cb") :pointer
+  (buffer :pointer)
+  (cb :pointer)
+  (cbarg :pointer))
+
+(defcfun (evbuffer-remove-cb-entry "evbuffer_remove_cb_entry") :int
+  (buffer :pointer)
+  (ent :pointer))
+
+(defcfun (evbuffer-remove-cb "evbuffer_remove_cb") :int
+  (buffer :pointer)
+  (cb :pointer)
+  (cbarg :pointer))
+
+(defvar *EVBUFFER-CB-ENABLED* 1)
+
+(defcfun (evbuffer-cb-set-flags "evbuffer_cb_set_flags") :int
+  (buffer :pointer)
+  (cb :pointer)
+  (flags :uint32))
+(defcfun (evbuffer-cb-clear-flags "evbuffer_cb_clear_flags") :int
+  (buffer :pointer)
+  (cb :pointer)
+  (flags :uint32))
+
+(defcfun (evbuffer-pullup "evbuffer_pullup") :pointer
+  (buf :pointer)
+  (size :ssize))
+(defcfun (evbuffer-prepend "evbuffer_prepend") :int
+  (buf :pointer)
+  (data :pointer)
+  (size :size))
+
+(defcfun (evbuffer-prepend-buffer "evbuffer_prepend_buffer") :int
+  (dst :pointer)
+  (src :pointer))
+
+(defcfun (evbuffer-freeze "evbuffer_freeze") :int
+  (buf :pointer)
+  (at_front :int))
+
+(defcfun (evbuffer-unfreeze "evbuffer_unfreeze") :int
+  (buf :pointer)
+  (at_front :int))
+
+(defcfun (evbuffer-defer-callbacks "evbuffer_defer_callbacks") :int
+  (buffer :pointer)
+  (base :pointer))
+
+(defcfun (evbuffer-add-iovec "evbuffer_add_iovec") :size
+  (buffer :pointer)
+  (iov :pointer)
+  (n_vec :int))
+
+;; end event2/buffer.h
