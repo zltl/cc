@@ -2,7 +2,7 @@
 (defpackage :cc-tests
   (:use :common-lisp
         :fiveam
-        :cc))
-
+        :cc
+	:log4cl))
 
 (in-package :cc-tests)

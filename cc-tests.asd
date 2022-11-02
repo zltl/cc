@@ -4,13 +4,15 @@
   :author "liaotonglang@gmail.com <liaotonglang@gmail.com@mail.com>"
   :version "0.0.1"
   :depends-on (:cc
-               :fiveam)
+               :fiveam
+	       :log4cl)
   :license "BSD"
   :serial t
   :components ((:module "tests"
                         :serial t
                         :components ((:file "packages")
-                                     (:file "test-cc"))))
+                                     (:file "test-cc")
+				     (:file "test-cc-timeval"))))
 
   ;; The following would not return the right exit code on error, but still 0.
   ;; :perform (test-op (op _) (symbol-call :fiveam :run-all-tests))

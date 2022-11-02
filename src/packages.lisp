@@ -2,7 +2,7 @@
   (:use :cl :common-lisp :cffi)
   (:export :main))
 
-(defpackage :cc-event
+(defpackage :cc-libevent
   (:use :cl :common-lisp :cffi)
   (:export
    :event-enable-debug-mode
@@ -104,7 +104,6 @@
    :event-base-gettimeofday-cached
    :event-base-update-cache-time
    :libevent-global-shutdown
-
    ;; threads
    :*EVTHREAD-WRITE*
    :*EVTHREAD-READ*
@@ -117,7 +116,6 @@
    :evthread-use-pthreads
    :evthread-enable-lock-debugging
    :evthread-make-base-notifiable
-
    ;; buffer
    :evbuffer-iovec
    :evbuffer-free
@@ -174,7 +172,6 @@
    :evbuffer-unfreeze
    :evbuffer-defer-callbacks
    :evbuffer-add-iovec
-
    :*BEV-EVENT-READING*
    :*BEV-EVENT-WRITING*
    :*BEV-EVENT-EOF*
@@ -255,7 +252,6 @@
    :bufferevent-rate-limit-group-decrement-write
    :bufferevent-rate-limit-group-get-totals
    :bufferevent-rate-limit-group-reset-totals
-
    :evutil-socketpair
    :evutil-make-socket-nonblocking
    :evutil-make-listen-socket-reuseable
@@ -265,8 +261,6 @@
    :evutil-closesocket
    :evutil-make-tcp-listen-socket-deferred
    :evutil-parse-sockaddr-port
-
-
    :evdns-base-new
    :evdns-base-free
    :evdns-base-clear-host-addresses
@@ -305,8 +299,6 @@
    :evdns-getaddrinfo
    :evdns-getaddrinfo-cancel
    :evdns-base-get-nameserver-addr
-
-
    :evhttp-new
    :evhttp-bind-socket
    :evhttp-bind-socket-with-handle
@@ -426,6 +418,36 @@
    :evhttp-uri-parse
    :evhttp-uri-free
    :evhttp-uri-join
-   ;; ...
-   ))
+   :*BUFFEREVENT-SSL-OPEN*
+   :*BUFFEREVENT-SSL-CONNECTING*
+   :*BUFFEREVENT-SSL-ACCEPTING*
+   :bufferevent-openssl-filter-new
+   :bufferevent-openssl-socket-new
+   :bufferevent-openssl-get-allow-dirty-shutdown
+   :bufferevent-openssl-set-allow-dirty-shutdown
+   :bufferevent_openssl_get_ssl
+   :bufferevent-ssl-renegotiate
+   :bufferevent-get-openssl-error))
+
+(defpackage :cc-timeval
+  (:use :cl :common-lisp :cffi)
+  (:export :gettimeofday :timeval))
+
+
+(defpackage :cc-log
+  (:use :cl :local-time :log4cl))
+
+(defpackage :cc-conf
+  (:use :cl)
+  (:export
+   :conf
+   :name
+   :try-files
+   :from-env
+   :env-prefix
+   :get-value
+   :load-yaml
+   :+load-yaml
+   :+get-value))
+
 

@@ -11,7 +11,12 @@
 
   ;; Dependencies.
   :depends-on (:cffi
-	       :cl-autowrap/libffi)
+	       :cl-autowrap/libffi
+	       :local-time
+	       :log4cl
+	       :uiop
+	       :cl-yaml
+	       :cl-ppcre)
 
   ;; Project stucture.
   :serial t
@@ -19,7 +24,10 @@
                         :serial t
                         :components ((:file "packages")
                                      (:file "cc")
-				     (:file "event"))))
+				     (:file "libevent")
+				     (:file "timeval")
+				     (:file "log")
+				     (:file "conf"))))
 
   ;; Build a binary:
   ;; don't change this line.

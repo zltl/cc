@@ -1,9 +1,9 @@
 
-(ql:quickload "cffi")
+;; (ql:quickload "cffi")
 
 ;; bind libevent
 
-(in-package :cc-event)
+(in-package :cc-libevent)
 
 (define-foreign-library libevent
     (:unix (:or "libevent.so"))
@@ -1645,3 +1645,47 @@
   (limit :size))
 
 ;; end event2/http.h
+
+;; start event2/bufferevent_ssl.h
+
+(defvar *BUFFEREVENT-SSL-OPEN* 0)
+(defvar *BUFFEREVENT-SSL-CONNECTING* 1)
+(defvar *BUFFEREVENT-SSL-ACCEPTING* 2)
+
+(defcfun (bufferevent-openssl-filter-new "bufferevent_openssl_filter_new")
+  :pointer
+  (base :pointer)
+  (underlying :pointer)
+  (ssl :pointer)
+  (state :int)
+  (options :int))
+
+(defcfun (bufferevent-openssl-socket-new "bufferevent_openssl_socket_new")
+  :pointer
+  (base :pointer)
+  (fd :int)
+  (ssl :pointer)
+  (state :int)
+  (options :int))
+
+(defcfun (bufferevent-openssl-get-allow-dirty-shutdown
+	  "bufferevent_openssl_get_allow_dirty_shutdown")
+  :int
+  (bev :pointer))
+
+(defcfun (bufferevent-openssl-set-allow-dirty-shutdown
+	  "bufferevent_openssl_set_allow_dirty_shutdown")
+  :void
+  (bev :pointer)
+  (allow_dirty_shutdown :int))
+
+(defcfun (bufferevent_openssl_get_ssl "bufferevent_openssl_get_ssl")
+  :pointer
+  (bufev :pointer))
+
+(defcfun (bufferevent-ssl-renegotiate "bufferevent_ssl_renegotiate") :int
+  (befev :pointer))
+
+(defcfun (bufferevent-get-openssl-error "bufferevent_get_openssl_error") :long
+  (bev :pointer))
+

@@ -3,7 +3,7 @@
 ;; Define your project functionality here...
 
 (defun greet (&optional (name "liaotonglang@gmail.com"))
-  (format t "Hello ~a from ~a!~&" name "cc"))
+  (log:info "Hello ~a from ~a!~&" name "cc"))
 
 (defun help ()
   (format t "~&Usage:
@@ -26,6 +26,4 @@
   ;; uiop:command-line-arguments returns a list of arguments (sans the script name).
   ;; We defer the work of parsing to %main because we call it also from the Roswell script.
   (%main (uiop:command-line-arguments)))
-
-
 
