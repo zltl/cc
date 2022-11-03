@@ -431,7 +431,10 @@
 
 (defpackage :cc-timeval
   (:use :cl :common-lisp :cffi)
-  (:export :gettimeofday :timeval))
+  (:export
+   :gettimeofday
+   :timeval
+   :with-c-timeval-value))
 
 
 (defpackage :cc-log
@@ -448,6 +451,8 @@
    :get-value
    :load-yaml
    :+load-yaml
-   :+get-value))
+   :+get-value
+   :parse-duration
+   :parse-float))
 
 
