@@ -90,3 +90,48 @@ conf:yaml-object."
 (defun +get-value (name)
   "Get object specify by name lik \"cc.foo.bar\" from *default-conf*"
   (get-value *default-conf* name))
+
+(defun parse-float (str)
+  (with-input-from-string (s str)
+    (car (loop
+	   :for num := (read s nil nil)
+	   :while num
+	   :collect num))))
+
+(defun parse-duration (str)
+  "Parse string to seconds and microseconds as multiple value. 1d3h12m1s.123
+where 123 is microsecond, 1s=1e6 microsecond."
+  (let ((second 0)
+	(microsecond 0)
+	(value 0)) ;; value store temp number
+    (loop for idex from 0 to (- (length str) 1)
+	  do
+	     (let* ((chr (aref str idex)) ;; chr = char of str[idex]
+		    (digit (digit-char-p chr))) ;; digit = digit number of chr
+	       (if digit
+		   ;; if is digit, value = value *10 + digit
+		   (setf value (+ (* 10 value) digit))
+		   ;; else check d,h,m,s .xxxx
+		   (case chr
+		     (#\. (setf second (+ second value)
+				microsecond
+				(* 1000000 (parse-float (subseq str idex)))
+				value 0
+				;; break when reach .xyz
+				idex (length str)))
+		     (#\d (setf second (+ second (* 60 60 24 value))
+				value 0))
+		     (#\h (setf second (+ second (* 60 60 value))
+				value 0))
+		     (#\m (setf second (+ second (* 60 value))
+				value 0))
+		     (#\s (setf second (+ second value)
+				value 0))
+		     (otherwise (error (concatenate
+					'string
+					"Unreconize char: "
+					(string chr))))))))
+    (setf second (+ second value))
+    (values second microsecond)))
+
+

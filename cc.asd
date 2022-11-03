@@ -16,7 +16,8 @@
 	       :log4cl
 	       :uiop
 	       :cl-yaml
-	       :cl-ppcre)
+	       :cl-ppcre
+	       :alexandria)
 
   ;; Project stucture.
   :serial t
