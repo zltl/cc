@@ -1,6 +1,4 @@
 
-;; (ql:quickload "cffi")
-
 (in-package :cc-timeval)
 
 ;;; Define the TIMEVAL structure used by 'gettimeofday'.  This assumes
@@ -58,5 +56,10 @@
     (with-foreign-slots ((tv-sec tv-usec) tv timeval)
       (values tv-sec tv-usec))))
 
+(defmacro with-c-timeval-value (tv second microsecond &body body)
+  `(with-foreign-object (,tv 'timeval)
+     (with-foreign-slots (tv-sec tv-usec ,tv (:struct timeval))
+       (setf tv-sec ,second
+	     tv-usec ,microsecond)
+       ,@body)))
 
-                                    
