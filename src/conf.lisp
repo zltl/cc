@@ -58,38 +58,9 @@ conf:yaml-object."
   variable name like \"CC_FOO_BAR\", with env-prefix concated as
   prefix."
   (let ((suffix (string-upcase (ppcre:regex-replace-all "\\." name "_"))))
-    (if env-prefix
+    (if (> (length env-prefix) 0)
 	(concatenate 'string env-prefix "_" suffix)
 	suffix)))
-
-(defun get-string-from-env (name &optional &key env-prefix)
-  "Convert name to env-name and get env value string"
-  (let ((env-name (dot-split-to-env-name name :env-prefix env-prefix)))
-    (uiop:getenv env-name)))
-
-(defun get-from-object (name obj)
-  "Get object from yaml object"
-  (let ((hierarches (ppcre:split "\\." name))
-	(cur-obj obj))
-    (dolist (field hierarches cur-obj)
-      (setf cur-obj
-	    (if (hash-table-p cur-obj)
-		(gethash field cur-obj))))))
-
-(defmethod get-value ((c conf) name)
-  "Get object specify by name like \"cc.foo.bar\""
-  ;; get from env
-  (or (conf-get-string-from-env name :env-prefix (env-prefix c))
-      ;; get from conf::yaml-object
-      (get-from-object name (slot-value c 'yaml-object))))
-
-(defun +load-yaml ()
-  "Load yaml file from try-files into *default-conf*:yaml-object."
-  (load-yaml *default-conf*))
-
-(defun +get-value (name)
-  "Get object specify by name lik \"cc.foo.bar\" from *default-conf*"
-  (get-value *default-conf* name))
 
 (defun parse-float (str)
   (with-input-from-string (s str)
@@ -97,6 +68,27 @@ conf:yaml-object."
 	   :for num := (read s nil nil)
 	   :while num
 	   :collect num))))
+
+(defun string/int/float (str)
+  "Check if str can parse to float or int, float -> 'float
+int -> 'int
+else return 'string"
+  (if (not str) nil
+      (let ((have-chr nil)
+	    (have-dot nil))
+	(loop for c across str
+	      :until have-chr
+	      do
+		 (let ((digit (digit-char-p c)))
+		   (and (not digit)
+			(case c
+			  (#\. (setf have-dot t))
+			  (otherwise (setf have-chr t))))))
+	(if have-chr
+	    'string
+	    (if have-dot
+		'float
+		'int)))))
 
 (defun parse-duration (str)
   "Parse string to seconds and microseconds as multiple value. 1d3h12m1s.123
@@ -134,4 +126,37 @@ where 123 is microsecond, 1s=1e6 microsecond."
     (setf second (+ second value))
     (values second microsecond)))
 
+(defun get-string-from-env (name &optional &key env-prefix)
+  "Convert name to env-name and get env value string"
+  (let ((env-name (dot-split-to-env-name name :env-prefix env-prefix)))
+    (uiop:getenv env-name)))
+
+(defun get-from-object (name obj)
+  "Get object from yaml object"
+  (let ((hierarches (ppcre:split "\\." name))
+	(cur-obj obj))
+    (dolist (field hierarches cur-obj)
+      (setf cur-obj
+	    (if (hash-table-p cur-obj)
+		(gethash field cur-obj))))))
+
+(defmethod get-value ((c conf) name)
+  "Get object specify by name like \"cc.foo.bar\""
+  ;; get from env
+  (or (let ((v (get-string-from-env name :env-prefix (env-prefix c))))
+	(case (string/int/float v)
+	  (string v)
+	  (int (parse-integer v))
+	  (float (parse-float:parse-float v))
+	  (otherwise nil)))
+      ;; get from conf::yaml-object
+      (get-from-object name (slot-value c 'yaml-object))))
+
+(defun +load-yaml ()
+  "Load yaml file from try-files into *default-conf*:yaml-object."
+  (load-yaml *default-conf*))
+
+(defun +get-value (name)
+  "Get object specify by name lik \"cc.foo.bar\" from *default-conf*"
+  (get-value *default-conf* name))
 

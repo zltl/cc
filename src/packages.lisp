@@ -434,7 +434,10 @@
   (:export
    :gettimeofday
    :timeval
-   :with-c-timeval-value))
+   :get-values
+   :with-c-timeval-value
+   :to-timestamp
+   :from-timestamp))
 
 
 (defpackage :cc-log
@@ -443,6 +446,7 @@
 (defpackage :cc-conf
   (:use :cl)
   (:export
+   :*default-conf*
    :conf
    :name
    :try-files
@@ -455,4 +459,6 @@
    :parse-duration
    :parse-float))
 
-
+(defpackage :cc-errno
+  (:use :cl :cffi)
+  (:export :str))

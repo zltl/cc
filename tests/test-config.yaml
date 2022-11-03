@@ -1,0 +1,12 @@
+A: 213
+B:
+  C:
+    - lc
+    - l3
+  d:
+    exc: "this isstring"
+    icx: 87
+    flv: 233.123
+    dura: 1h24m
+
+

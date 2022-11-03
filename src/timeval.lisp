@@ -8,58 +8,39 @@
   (tv-sec :long)
   (tv-usec :long))
 
-;;; A NULL-POINTER is a foreign :POINTER that must always be NULL.
-;;; Both a NULL pointer and NIL are legal values---any others will
-;;; result in a runtime error.
-(define-foreign-type null-pointer-type ()
-  ()
-  (:actual-type :pointer)
-  (:simple-parser null-pointer))
-
-;;; This type translator is used to ensure that a NULL-POINTER has a
-;;; null value.  It also converts NIL to a null pointer.
-(defmethod translate-to-foreign (value (type null-pointer-type))
-  (cond
-    ((null value) (null-pointer))
-    ((null-pointer-p value) value)
-    (t (error "~A is not a null pointer." value))))
-
-;;; The SYSCALL-RESULT type is an integer type used for the return
-;;; value of C functions that return -1 and set errno on errors.
-;;; Someday when CFFI has a portable interface for dealing with
-;;; 'errno', this error reporting can be more useful.
-(define-foreign-type syscall-result-type ()
-  ()
-  (:actual-type :int)
-  (:simple-parser syscall-result))
-
-;;; Type translator to check a SYSCALL-RESULT and signal a Lisp error
-;;; if the value is negative.
-(defmethod translate-from-foreign (value (type syscall-result-type))
-  (if (minusp value)
-      (error "System call failed with return value ~D." value)
-      value))
-
 ;;; Define the Lisp function %GETTIMEOFDAY to call the C function
 ;;; 'gettimeofday', passing a pointer to the TIMEVAL structure to fill
 ;;; in.  The TZP parameter is deprecated and should be NULL --- we can
 ;;; enforce this by using our NULL-POINTER type defined above.
-(defcfun ("gettimeofday" %gettimeofday) syscall-result
+(defcfun ("gettimeofday" %gettimeofday) :int
   (tp :pointer)
-  (tzp null-pointer))
+  (tzp :pointer))
+
+(defmacro with-c-timeval-value (tv sec micro &body body)
+  "Create timeval object tv, then set sec, micro to tv, call body."
+  `(with-foreign-object (,tv '(:struct timeval))
+    (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-sec) ,sec)
+    (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-usec) ,micro)
+     ,@body))
+
+(defun get-values (tv)
+  "Return second and microsecond for tv."
+  (with-foreign-slots ((tv-sec tv-usec) tv (:struct timeval))
+    (values tv-sec tv-usec)))
 
 ;;; Define a Lispy interface to 'gettimeofday' that returns the
 ;;; seconds and microseconds as multiple values.
 (defun gettimeofday ()
-  (with-foreign-object (tv 'timeval)
-    (%gettimeofday tv nil)
-    (with-foreign-slots ((tv-sec tv-usec) tv timeval)
-      (values tv-sec tv-usec))))
+  (with-foreign-object (tv '(:struct timeval))
+    (let ((r (%gettimeofday tv (null-pointer))))
+      (if (< r 0) (error (cc-errno:str)))
+      (get-values tv))))
 
-(defmacro with-c-timeval-value (tv second microsecond &body body)
-  `(with-foreign-object (,tv 'timeval)
-     (with-foreign-slots (tv-sec tv-usec ,tv (:struct timeval))
-       (setf tv-sec ,second
-	     tv-usec ,microsecond)
-       ,@body)))
+(defun to-timestamp (sec micro)
+  "Convert sec micro pair to local-time:timestamp."
+  (local-time:unix-to-timestamp sec :nsec (* 1000 micro)))
 
+(defun from-timestamp (ts)
+  "Convert local-time:timestamp to sec and micro"
+  (values (local-time:timestamp-to-unix ts)
+	  (/ (local-time:nsec-of ts) 1000)))

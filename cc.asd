@@ -17,7 +17,8 @@
 	       :uiop
 	       :cl-yaml
 	       :cl-ppcre
-	       :alexandria)
+	       :alexandria
+	       :parse-float)
 
   ;; Project stucture.
   :serial t

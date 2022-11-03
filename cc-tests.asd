@@ -5,13 +5,16 @@
   :version "0.0.1"
   :depends-on (:cc
                :fiveam
-	       :log4cl)
+	       :log4cl
+	       :cffi
+	       :uiop)
   :license "BSD"
   :serial t
   :components ((:module "tests"
                         :serial t
                         :components ((:file "packages")
                                      (:file "test-cc")
+				     (:file "test-cc-conf")
 				     (:file "test-cc-timeval"))))
 
   ;; The following would not return the right exit code on error, but still 0.
