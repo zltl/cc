@@ -1,6 +1,7 @@
 (defpackage :cc
   (:use :cl :common-lisp :cffi)
-  (:export :main))
+  (:export :main
+	   :case-expr))
 
 (defpackage :cc-libevent
   (:use :cl :common-lisp :cffi)

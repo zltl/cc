@@ -1,5 +1,22 @@
 (in-package :cc)
 
+(defmacro case-expr (&rest cond-expr-list)
+  "Case switch by condition expresion
+
+(case-expr
+ (nil (format t \"1\") 1)
+ (nil (format t \"2\") 2)
+ (t   (format t \"3\") 3)
+ (t   (format t \"4\") 4))
+
+=> print 3, return 3
+"
+  (let ((con (gensym))
+	(expr (gensym)))
+    `(loop for (,con . ,expr) in ',cond-expr-list
+	   when ,con
+	     return (eval (push 'progn ,expr)))))
+
 ;; Define your project functionality here...
 
 (defun greet (&optional (name "liaotonglang@gmail.com"))
