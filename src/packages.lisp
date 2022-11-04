@@ -462,4 +462,4 @@
 
 (defpackage :cc-errno
   (:use :cl :cffi)
-  (:export :str))
+  (:export :str :code))
