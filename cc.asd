@@ -29,7 +29,9 @@
 				     (:file "libevent")
 				     (:file "timeval")
 				     (:file "log")
-				     (:file "conf"))))
+				     (:file "conf")
+				     (:file "util")
+				     (:file "error"))))
 
   ;; Build a binary:
   ;; don't change this line.

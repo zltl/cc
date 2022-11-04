@@ -440,7 +440,6 @@
    :to-timestamp
    :from-timestamp))
 
-
 (defpackage :cc-log
   (:use :cl :local-time :log4cl))
 
@@ -463,3 +462,12 @@
 (defpackage :cc-errno
   (:use :cl :cffi)
   (:export :str :code))
+
+(defpackage :cc-util
+  (:use :cl :cffi)
+  (:export :example))
+
+(defpackage :cc-error
+  (:use :cl)
+  (:export :cc-error
+	   :invalid-duration-string))

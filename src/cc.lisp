@@ -1,21 +1,5 @@
 (in-package :cc)
 
-(defmacro case-expr (&rest cond-expr-list)
-  "Case switch by condition expresion, for example
-
-    (case-expr
-     (nil (format t \"1\") 1)
-     ((> 1 3) (format t \"2\") 2)
-     ((= 1 1)   (format t \"3\") 3)
-     (t   (format t \"4\") 4))
-
-    ==> print 3, return 3
-"  
-  (let ((r (list 'or)))
-    (loop for (con . expr) in cond-expr-list
-	  do
-	     (nconc r (list (list 'and con (push 'progn expr)))))
-    r))
 
 ;; Define your project functionality here...
 

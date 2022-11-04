@@ -13,10 +13,12 @@
   (is (= (+ 1 2)
          3)))
 
-(test case-expr
-      (is (= 3 (cc:case-expr
-		(nil (format t "1") 1)
-		(nil (format t "2") 2)
-		(t   (format t "3") 3)
-		(t   (format t "4") 4)))))
-
+;; (test case-expr
+;;       (is (= 3
+;; 	     (let ((x nil))
+;; 	       (cc-util:case-expr
+;; 		(nil (format t "1") 1)
+;; 		(x (format t "2") 2)
+;; 		(t   (format t "3") 3)
+;; 		(t   (format t "4") 4))))))
+;;

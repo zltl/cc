@@ -2,7 +2,7 @@
 
 (defclass conf ()
   ((name :documentation "Name of configuration"
-	 :initform (error "You didn't supply an initial value for slot name")
+	 :initform "CC"
 	 :initarg :name
 	 :type string
 	 :accessor name)
@@ -53,6 +53,26 @@ conf:yaml-object."
 	    do (setf real-filename (probe-file filename)))
       (and real-filename (setf yaml-object (yaml:parse real-filename))))))
 
+
+(defun string/int/float (str)
+  "Check if str can parse to float or int, float -> 'float
+int -> 'int
+else return 'string"
+  (if (not str) nil
+      (let ((have-chr nil)
+	    (have-dot nil))
+	(loop for c across str
+	      for digit = (digit-char-p c)
+	      :until have-chr
+	      do
+		 (and (not digit)
+		      (case c
+			(#\. (setf have-dot t))
+			(otherwise (setf have-chr t)))))
+	(or (and have-chr 'string)
+	    (and have-dot 'float)
+	    (and t 'int)))))
+
 (defun dot-split-to-env-name (name &optional &key env-prefix)
   "Convert dot-split string like \"cc.foo.bar\" to environment
   variable name like \"CC_FOO_BAR\", with env-prefix concated as
@@ -69,25 +89,6 @@ conf:yaml-object."
 	   :while num
 	   :collect num))))
 
-(defun string/int/float (str)
-  "Check if str can parse to float or int, float -> 'float
-int -> 'int
-else return 'string"
-  (if (not str) nil
-      (let ((have-chr nil)
-	    (have-dot nil))
-	(loop for c across str
-	      :until have-chr
-	      do
-		 (let ((digit (digit-char-p c)))
-		   (and (not digit)
-			(case c
-			  (#\. (setf have-dot t))
-			  (otherwise (setf have-chr t))))))
-	(cc:case-expr
-	 (have-chr 'string)
-	 (have-dot 'float)
-	 (t 'int)))))
 
 (defun parse-duration (str)
   "Parse string to seconds and microseconds as multiple value. 1d3h12m1s.123
@@ -118,10 +119,11 @@ where 123 is microsecond, 1s=1e6 microsecond."
 				value 0))
 		     (#\s (setf second (+ second value)
 				value 0))
-		     (otherwise (error (concatenate
-					'string
-					"Unreconize char: "
-					(string chr))))))))
+		     (otherwise (error cc-error:invalid-duration-string
+				       :msg (concatenate
+					     'string
+					     "Unreconize char: "
+					     (string chr))))))))
     (setf second (+ second value))
     (values second microsecond)))
 
