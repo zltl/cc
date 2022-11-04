@@ -20,8 +20,3 @@
 		(t   (format t "3") 3)
 		(t   (format t "4") 4)))))
 
-(cc:case-expr
- (nil (format t "1") 1)
- (nil (format t "2") 2)
- (t   (format t "3") 3)
- (t   (format t "4") 4))

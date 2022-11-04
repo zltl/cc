@@ -84,11 +84,10 @@ else return 'string"
 			(case c
 			  (#\. (setf have-dot t))
 			  (otherwise (setf have-chr t))))))
-	(if have-chr
-	    'string
-	    (if have-dot
-		'float
-		'int)))))
+	(cc:case-expr
+	 (have-chr 'string)
+	 (have-dot 'float)
+	 (t 'int)))))
 
 (defun parse-duration (str)
   "Parse string to seconds and microseconds as multiple value. 1d3h12m1s.123

@@ -10,12 +10,13 @@
  (t   (format t \"4\") 4))
 
 => print 3, return 3
-"
-  (let ((con (gensym))
-	(expr (gensym)))
-    `(loop for (,con . ,expr) in ',cond-expr-list
-	   when ,con
-	     return (eval (push 'progn ,expr)))))
+"  
+  (let ((r (list 'or)))
+    (loop for (con . expr) in cond-expr-list
+	  do
+	     (nconc r (list (list 'and con (push 'progn expr))))
+	)
+    r))
 
 ;; Define your project functionality here...
 
