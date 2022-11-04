@@ -48,9 +48,9 @@
   (base :pointer)
   (tp :pointer))
 
-(defvar *EVENT-BASE-COUNT-ACTIVE* 1)
-(defvar *EVENT-BASE-COUNT-VIRTUAL* 2)
-(defvar *EVENT-BASE-COUNT-ADDED* 4)
+(defconstant *EVENT-BASE-COUNT-ACTIVE* 1)
+(defconstant *EVENT-BASE-COUNT-VIRTUAL* 2)
+(defconstant *EVENT-BASE-COUNT-ADDED* 4)
 
 (defcfun (event-base-get-num-events "event_base_get_num_events") :int
   (eb :pointer)
@@ -69,17 +69,17 @@
   (cfg :pointer)
   (method :pointer))
 
-(defvar *EV-FEATURE-ET* #x01)
-(defvar *EV-FEATURE-O1* #x02)
-(defvar *EV-FEATURE-FDS* #x04)
-(defvar *EV-FEATURE-CLOSE* #x08)
+(defconstant *EV-FEATURE-ET* #x01)
+(defconstant *EV-FEATURE-O1* #x02)
+(defconstant *EV-FEATURE-FDS* #x04)
+(defconstant *EV-FEATURE-CLOSE* #x08)
 
-(defvar *EVENT-BASE-FLAG-NOLOCK* #x01)
-(defvar *EVENT-BASE-FLAG-IGNORE-ENV* #x02)
-(defvar *EVENT-BASE-FLAG-STARTUP-IOCP* #x04)
-(defvar *EVENT-BASE-FLAG-NO-CACHE-TIME* #x08)
-(defvar *EVENT-BASE-FLAG-EPOLL-USE-CHANGELIST* #x10)
-(defvar *EVENT-BASE-FLAG-PRECISE-TIMER* #x20)
+(defconstant *EVENT-BASE-FLAG-NOLOCK* #x01)
+(defconstant *EVENT-BASE-FLAG-IGNORE-ENV* #x02)
+(defconstant *EVENT-BASE-FLAG-STARTUP-IOCP* #x04)
+(defconstant *EVENT-BASE-FLAG-NO-CACHE-TIME* #x08)
+(defconstant *EVENT-BASE-FLAG-EPOLL-USE-CHANGELIST* #x10)
+(defconstant *EVENT-BASE-FLAG-PRECISE-TIMER* #x20)
 
 (defcfun (event-base-get-features "event_base_get_features") :int
   (base :pointer))
@@ -115,10 +115,10 @@
 (defcfun (event-base-free-nofinalize "event_base_free_nofinalize") :void
   (eb :pointer))
 
-(defvar *EVENT-LOG-DEBUG* 0)
-(defvar *EVENT-LOG_MSG* 1)
-(defvar *EVENT-LOG-WARN* 2)
-(defvar *EVENT-LOG-ERR* 3)
+(defconstant *EVENT-LOG-DEBUG* 0)
+(defconstant *EVENT-LOG_MSG* 1)
+(defconstant *EVENT-LOG-WARN* 2)
+(defconstant *EVENT-LOG-ERR* 3)
 
 (defcfun (event-set-log-callback "event_set_log_callback") :void
   (cb :pointer))
@@ -126,8 +126,8 @@
 (defcfun (event-set-fatal-callback "event_set_fatal_callback") :void
   (cb :pointer))
 
-(defvar *EVENT-DBG-ALL* #xffffffff)
-(defvar *EVENT-DBG-NONE* 0)
+(defconstant *EVENT-DBG-ALL* #xffffffff)
+(defconstant *EVENT-DBG-NONE* 0)
 
 (defcfun (event-enable-debug-logging "event_enable_debug_logging") :void
   (which :uint32))
@@ -136,9 +136,9 @@
   (eb :pointer)
   (ev :pointer))
 
-(defvar *EVLOOP-ONCE* #x01)
-(defvar *EVLOOP-NONBLOCK* #x02)
-(defvar *EVLOOP-NO-EXIT-ON-EMPTY* #x04)
+(defconstant *EVLOOP-ONCE* #x01)
+(defconstant *EVLOOP-NONBLOCK* #x02)
+(defconstant *EVLOOP-NO-EXIT-ON-EMPTY* #x04)
 
 (defcfun (event-base-loop "event_base_loop") :int
   (eb :pointer)
@@ -160,14 +160,14 @@
 (defcfun (event-base-got-break "event_base_got_break") :int
   (eb :pointer))
 
-(defvar *EV-TIMEOUT* #x01)
-(defvar *EV-READ* #x02)
-(defvar *EV-WRITE* #x04)
-(defvar *EV-SIGNAL* #x08)
-(defvar *EV-PERSIST* #x10)
-(defvar *EV-ET* #x20)
-(defvar *EV-FINALIZE* #x40)
-(defvar *EV-CLOSED* #x80)
+(defconstant *EV-TIMEOUT* #x01)
+(defconstant *EV-READ* #x02)
+(defconstant *EV-WRITE* #x04)
+(defconstant *EV-SIGNAL* #x08)
+(defconstant *EV-PERSIST* #x10)
+(defconstant *EV-ET* #x20)
+(defconstant *EV-FINALIZE* #x40)
+(defconstant *EV-CLOSED* #x80)
 
 (defcfun (event-self-cbarg "event_self_cbarg") :pointer)
 
@@ -327,12 +327,12 @@
 
 ;; begin event2/thread.h
 
-(defvar *EVTHREAD-WRITE* #x04)
-(defvar *EVTHREAD-READ* #x08)
-(defvar *EVTHREAD-TRY* #x10)
+(defconstant *EVTHREAD-WRITE* #x04)
+(defconstant *EVTHREAD-READ* #x08)
+(defconstant *EVTHREAD-TRY* #x10)
 
-(defvar *EVTHREAD-LOCKTYPE-RECURSIVE* 1)
-(defvar *EVTHREAD-LOCKTYPE-READWRIT* 2)
+(defconstant *EVTHREAD-LOCKTYPE-RECURSIVE* 1)
+(defconstant *EVTHREAD-LOCKTYPE-READWRIT* 2)
 
 (defcfun (evthread-set-lock-callbacks "evthread_set_lock_callbacks") :int
   (cbs :pointer))
@@ -373,7 +373,7 @@
 (defcfun (evbuffer-unlock "evbuffer_unlock") :void
   (buf :pointer))
 
-(defvar *EVBUFFER-FLAG-DRAINS-TO-FD* 1)
+(defconstant *EVBUFFER-FLAG-DRAINS-TO-FD* 1)
 
 (defcfun (evbuffer-set-flags "evbuffer_set_flags") :int
   (buf :pointer)
@@ -462,10 +462,10 @@
   (offset :offset)
   (length :offset))
 
-(defvar *EVBUF-FS-CLOSE-ON-FREE* #x01)
-(defvar *EVBUF-FS-DISABLE-MMAP* #x02)
-(defvar *EVBUF-FS-DISABLE-SENDFILE* #x04)
-(defvar *EVBUF-FS-DISABLE-LOCKING* #x08)
+(defconstant *EVBUF-FS-CLOSE-ON-FREE* #x01)
+(defconstant *EVBUF-FS-DISABLE-MMAP* #x02)
+(defconstant *EVBUF-FS-DISABLE-SENDFILE* #x04)
+(defconstant *EVBUF-FS-DISABLE-LOCKING* #x08)
 
 
 (defcfun (evbuffer-file-segment-new "evbuffer_file_segment_new") :pointer
@@ -579,7 +579,7 @@
   (cb :pointer)
   (cbarg :pointer))
 
-(defvar *EVBUFFER-CB-ENABLED* 1)
+(defconstant *EVBUFFER-CB-ENABLED* 1)
 
 (defcfun (evbuffer-cb-set-flags "evbuffer_cb_set_flags") :int
   (buffer :pointer)
@@ -625,17 +625,17 @@
 ;; begin event2/bufferevent.h
 
 
-(defvar *BEV-EVENT-READING* #x01)
-(defvar *BEV-EVENT-WRITING* #x02)
-(defvar *BEV-EVENT-EOF* #x10)
-(defvar *BEV-EVENT-ERROR* #x20)
-(defvar *BEV-EVENT-TIMEOUT* #x40)
-(defvar *BEV-EVENT-CONNECTED* #x80)
+(defconstant *BEV-EVENT-READING* #x01)
+(defconstant *BEV-EVENT-WRITING* #x02)
+(defconstant *BEV-EVENT-EOF* #x10)
+(defconstant *BEV-EVENT-ERROR* #x20)
+(defconstant *BEV-EVENT-TIMEOUT* #x40)
+(defconstant *BEV-EVENT-CONNECTED* #x80)
 
-(defvar *BEV-OPT-CLOSE-ON-FREE* #x01)
-(defvar *BEV-OPT-THREADSAFE* #x02)
-(defvar *BEV-OPT-DEFER-CALLBACKS* #x04)
-(defvar *BEV-OPT-UNLOCK-CALLBACKS* #x08)
+(defconstant *BEV-OPT-CLOSE-ON-FREE* #x01)
+(defconstant *BEV-OPT-THREADSAFE* #x02)
+(defconstant *BEV-OPT-DEFER-CALLBACKS* #x04)
+(defconstant *BEV-OPT-UNLOCK-CALLBACKS* #x08)
 
 
 (defcfun (bufferevent-socket-new "bufferevent_socket_new") :pointer
@@ -766,16 +766,16 @@
 (defcfun (bufferevent-decref "bufferevent_decref") :int
   (bufev :pointer))
 
-(defvar *BEV-NORMAL* 0)
-(defvar *BEV-FLUSH* 1)
-(defvar *BEV-FINISHED* 2)
+(defconstant *BEV-NORMAL* 0)
+(defconstant *BEV-FLUSH* 1)
+(defconstant *BEV-FINISHED* 2)
 
 (defcfun (bufferevent-flush "bufferevent_flush") :int
   (bufev :pointer)
   (mode :int))
 
-(defvar *BEV-TRIG-IGNORE-WATERMARKS* (ash 1 16))
-(defvar *BEV-TRIG-DEFER-CALLBACKS* *BEV-OPT-DEFER-CALLBACKS*)
+(defconstant *BEV-TRIG-IGNORE-WATERMARKS* (ash 1 16))
+(defconstant *BEV-TRIG-DEFER-CALLBACKS* *BEV-OPT-DEFER-CALLBACKS*)
 
 (defcfun (bufferevent-trigger "bufferevent_trigger") :void
   (bufev :pointer)
@@ -787,9 +787,9 @@
   (what :short)
   (options :int))
 
-(defvar *BEV-OK* 0)
-(defvar *BEV-NEED-MORE* 1)
-(defvar *BEV-ERROR* 2)
+(defconstant *BEV-OK* 0)
+(defconstant *BEV-NEED-MORE* 1)
+(defconstant *BEV-ERROR* 2)
 
 (defcfun (bufferevent-filter-new "bufferevent_filter_new") :pointer
   (underlying :pointer)
@@ -1303,7 +1303,7 @@
   (http :pointer)
   (tv :pointer))
 
-(defvar *EVHTTP-SERVER-LINGERING-CLOSE* #x0001)
+(defconstant *EVHTTP-SERVER-LINGERING-CLOSE* #x0001)
 
 (defcfun (evhttp-set-flags "evhttp_set_flags") :int
   (http :pointer)
@@ -1337,15 +1337,15 @@
 (defcfun (evhttp-send-reply-end "evhttp_send_reply_end") :void
   (req :pointer))
 
-(defvar *EVHTTP-REQ-GET* (ash 1 0))
-(defvar *EVHTTP-REQ-POST* (ash 1 1))
-(defvar *EVHTTP-REQ-HEAD* (ash 1 2))
-(defvar *EVHTTP-REQ-PUT* (ash 1 3))
-(defvar *EVHTTP-REQ-DELETE* (ash 1 4))
-(defvar *EVHTTP-REQ-OPTIONS* (ash 1 5))
-(defvar *EVHTTP-REQ-TRACE* (ash 1 6))
-(defvar *EVHTTP-REQ-CONNECT* (ash 1 7))
-(defvar *EVHTTP-REQ-PATCH* (ash 1 9))
+(defconstant *EVHTTP-REQ-GET* (ash 1 0))
+(defconstant *EVHTTP-REQ-POST* (ash 1 1))
+(defconstant *EVHTTP-REQ-HEAD* (ash 1 2))
+(defconstant *EVHTTP-REQ-PUT* (ash 1 3))
+(defconstant *EVHTTP-REQ-DELETE* (ash 1 4))
+(defconstant *EVHTTP-REQ-OPTIONS* (ash 1 5))
+(defconstant *EVHTTP-REQ-TRACE* (ash 1 6))
+(defconstant *EVHTTP-REQ-CONNECT* (ash 1 7))
+(defconstant *EVHTTP-REQ-PATCH* (ash 1 9))
 
 (defcenum evhttp-request-kind
   :EVHTTP-REQUEST
@@ -1414,10 +1414,10 @@
   (evcon :pointer)
   (family :int))
 
-(defvar *EVHTTP-CON-REUSE-CONNECTED-ADDR* #x0008)
-(defvar *EVHTTP-CON-READ-ON-WRITE-ERROR* #x0010)
-(defvar *EVHTTP-CON-LINGERING-CLOSE* #x0020)
-(defvar *EVHTTP-CON-PUBLIC-FLAGS-END #x100000)
+(defconstant *EVHTTP-CON-REUSE-CONNECTED-ADDR* #x0008)
+(defconstant *EVHTTP-CON-READ-ON-WRITE-ERROR* #x0010)
+(defconstant *EVHTTP-CON-LINGERING-CLOSE* #x0020)
+(defconstant *EVHTTP-CON-PUBLIC-FLAGS-END #x100000)
 
 (defcfun (evhttp-connection-set-flags "evhttp_connection_set_flags") :int
   (evcon :pointer)
@@ -1633,7 +1633,7 @@
   (source_uri :string)
   (flags :uint))
 
-(defvar *EVHTTP-URI-MONCONFORMANT #x01)
+(defconstant *EVHTTP-URI-MONCONFORMANT #x01)
 
 (defcfun (evhttp-uri-parse "evhttp_uri_parse") :pointer (source_uri :string))
 
@@ -1648,9 +1648,9 @@
 
 ;; start event2/bufferevent_ssl.h
 
-(defvar *BUFFEREVENT-SSL-OPEN* 0)
-(defvar *BUFFEREVENT-SSL-CONNECTING* 1)
-(defvar *BUFFEREVENT-SSL-ACCEPTING* 2)
+(defconstant *BUFFEREVENT-SSL-OPEN* 0)
+(defconstant *BUFFEREVENT-SSL-CONNECTING* 1)
+(defconstant *BUFFEREVENT-SSL-ACCEPTING* 2)
 
 (defcfun (bufferevent-openssl-filter-new "bufferevent_openssl_filter_new")
   :pointer

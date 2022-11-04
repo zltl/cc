@@ -18,7 +18,9 @@
 	       :cl-yaml
 	       :cl-ppcre
 	       :alexandria
-	       :parse-float)
+	       :parse-float
+	       :bt-semaphore
+	       :lparallel)
 
   ;; Project stucture.
   :serial t
@@ -31,7 +33,8 @@
 				     (:file "log")
 				     (:file "conf")
 				     (:file "util")
-				     (:file "error"))))
+				     (:file "error")
+				     (:file "event"))))
 
   ;; Build a binary:
   ;; don't change this line.

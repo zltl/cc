@@ -465,9 +465,16 @@
 
 (defpackage :cc-util
   (:use :cl :cffi)
-  (:export :example))
+  (:export :make-pointer-eql-able))
 
 (defpackage :cc-error
   (:use :cl)
-  (:export :cc-error
-	   :invalid-duration-string))
+  (:export
+   :cc-error
+   :invalid-duration-string
+   :oom
+   :already-start))
+
+(defpackage :cc-event
+  (:use :cl :cffi)
+  (:export :xx))
