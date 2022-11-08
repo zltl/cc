@@ -87,19 +87,16 @@ event has no socket."
 
 ;; Callback function that event base differ task will excecute
 (defcallback base-event-callback :void
-    ((fd :int)
-     (event-types :short)
-     (arg :pointer))
+    ((fd :int) (event-types :short) (arg :pointer))
   ;; arg always be pointer to event it self
   (let* ((ev (event-table-get arg))
 	 (cb-args (event-cb-arg-list ev)))
     (if ev
 	;; call cb if ev exists
-	(if cb-args
-	    ;; (apply (alexandria:curry (event-cb ev) ev) cb-args)
-	    (apply (event-cb ev) ev cb-args)
-	    (funcall (event-cb ev) ev))
-        
+	;; (apply (alexandria:curry (event-cb ev) ev) cb-args)
+	;; seems APPLY is enough
+	(apply (event-cb ev) ev cb-args)	
+
 	;; log error if event-struct not exists
 	;; MUST be a bug here
 	(log:error "event not found ~a" arg))))
