@@ -19,8 +19,9 @@
 (defmacro with-c-timeval-value (tv sec micro &body body)
   "Create timeval object tv, then set sec, micro to tv, call body."
   `(with-foreign-object (,tv '(:struct timeval))
-    (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-sec) ,sec)
-    (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-usec) ,micro)
+     (if (not 'micro) (setf micro 0))
+     (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-sec) ,sec)
+     (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-usec) ,micro)
      ,@body))
 
 (defun get-values (tv)

@@ -477,4 +477,33 @@
 
 (defpackage :cc-event
   (:use :cl :cffi)
-  (:export :xx))
+  (:export
+   :event
+   :event-c
+   :event-bace
+   :event-cb
+   :event-cb-arg
+   :event-fd
+
+   :base
+   :base-c
+   :base-ev
+   :base-id
+   :base-defer-task-queue
+   :base-lock
+   :start
+   :stop
+   :started-p
+
+   :defer-task
+   :defer-task-cb
+   :defer-task-cb-arg
+
+   :event-new
+   :event-free
+
+   :defer-submmit
+
+   :timer-submit
+   
+   ))

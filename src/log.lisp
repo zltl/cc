@@ -5,7 +5,8 @@
 (log:config :D
 	    :pretty
 	    :thread
-	    :package)
+	    :package
+	    :sane :this-console)
 
 (log:debug "logger loaded")
 

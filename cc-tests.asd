@@ -15,7 +15,8 @@
                         :components ((:file "packages")
                                      (:file "test-cc")
 				     (:file "test-cc-conf")
-				     (:file "test-cc-timeval"))))
+				     (:file "test-cc-timeval")
+				     (:file "test-cc-event"))))
 
   ;; The following would not return the right exit code on error, but still 0.
   ;; :perform (test-op (op _) (symbol-call :fiveam :run-all-tests))
