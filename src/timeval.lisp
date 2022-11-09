@@ -24,6 +24,14 @@
      (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-usec) ,micro)
      ,@body))
 
+(defmacro with-c-timeval-values (tv timeout &body body)
+  `(if ,timeout
+       (cc-timeval:with-c-timeval-value
+	   ,tv (car ,timeout) (car (cdr ,timeout))
+	 ,@body)
+       (let ((,tv (null-pointer)))
+	 ,@body)))
+
 (defun get-values (tv)
   "Return second and microsecond for tv."
   (with-foreign-slots ((tv-sec tv-usec) tv (:struct timeval))

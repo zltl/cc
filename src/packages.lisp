@@ -262,6 +262,9 @@
    :evutil-closesocket
    :evutil-make-tcp-listen-socket-deferred
    :evutil-parse-sockaddr-port
+   :*EVDNS-BASE-DISABLE-WHEN-INACTIVE*
+   :*EVDNS-BASE-INITIALIZE-NAMESERVERS*
+   :*EVDNS-BASE-NAMESERVERS-NO-DEFAULT*
    :evdns-base-new
    :evdns-base-free
    :evdns-base-clear-host-addresses
@@ -349,7 +352,7 @@
    :evhttp-request-set-chunked-cb
    :evhttp-request-set-header-cb
    :evhttp-request-set-error-cb
-   :evhttp-request-set-on-complete_cb
+   :evhttp-request-set-on-complete-cb
    :evhttp-request-free
    :evhttp-connection-base-new
    :evhttp-connection-set-family
@@ -437,6 +440,7 @@
    :timeval
    :get-values
    :with-c-timeval-value
+   :with-c-timeval-values   
    :to-timestamp
    :from-timestamp))
 
@@ -480,29 +484,37 @@
   (:export
    :event
    :event-c
-   :event-bace
+   :event-base
    :event-cb
-   :event-cb-arg
+   :event-cb-arg-list
    :event-fd
-
+   :event-types
+   :event-new
+   :event-free
+   :event-add
+   :event-del
+   
    :base
    :base-c
    :base-ev
    :base-id
    :base-defer-task-queue
    :base-lock
-   :start
-   :stop
-   :started-p
+   :base-dns-c
 
+   :base-init
+   :base-deinit
+   :base-loop-start
+   :base-loop-stop
+   :base-loop-started-p
+   
    :defer-task
    :defer-task-cb
    :defer-task-cb-arg
 
-   :event-new
-   :event-free
 
-   :defer-submmit
+
+   :defer-submit
 
    :timer-submit
    

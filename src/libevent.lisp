@@ -986,6 +986,10 @@
 
 ;; start event2/dns.h
 
+(defconstant *EVDNS-BASE-DISABLE-WHEN-INACTIVE* #x8000)
+(defconstant *EVDNS-BASE-INITIALIZE-NAMESERVERS* 1)
+(defconstant *EVDNS-BASE-NAMESERVERS-NO-DEFAULT* #x10000)
+
 (defcfun (evdns-base-new "evdns_base_new") :pointer
   (event_base :pointer)
   (initialize_nameservers :int))

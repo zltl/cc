@@ -5,7 +5,7 @@
 (ql:quickload "cc")
 
 (defun wait-base-start (eb)
-  (loop while (not (cc-event:started-p eb))
+  (loop while (not (cc-event:base-loop-started-p eb))
 	do
 	   (sleep 0.1)))
 
@@ -14,17 +14,20 @@
   (let ((eb (make-instance 'cc-event:base))
 	(st-thread nil))
 
+    (cc-event:base-init eb)
+    
     (setf st-thread
 	  (bt:make-thread
 	   (lambda ()
              (wait-base-start eb)
 	     (log:debug "stop thread")       
-	     (cc-event:stop eb)
+	     (cc-event:base-loop-stop eb)
 	     (log:debug "stop thread exit"))))
 
     (log:debug "start main")
-    (cc-event:start eb)
+    (cc-event:base-loop-start eb)
     (log:debug "stop main")
+    (cc-event:base-deinit eb)
 
     (bt:join-thread st-thread)
     (log:debug "Joined"))
@@ -37,6 +40,8 @@
 	(lock (bt:make-lock))
 	(run-flag 0))
 
+    (cc-event:base-init eb)
+    
     (setf thread
 	  (bt:make-thread
 	   (lambda ()
@@ -45,7 +50,7 @@
 
 	     (loop repeat n
 		   do
-		      (cc-event:defer-submmit
+		      (cc-event:defer-submit
 			  eb
 			  (lambda (arg1 arg2 arg3)
 			    (log:debug "defer-task callback invoked")
@@ -56,12 +61,13 @@
 	     (loop while (bt:with-lock-held (lock) (> n run-flag))
 		   do (sleep 0.1))
 	     (log:debug "stoping loop")
-	     (cc-event:stop eb))))
+	     (cc-event:base-loop-stop eb))))
 
     (log:debug "starting loop")
-    (cc-event:start eb)
+    (cc-event:base-loop-start eb)
+    (cc-event:base-deinit eb)
     (log:debug "loop stoped")
-
+    
     (bt:join-thread thread)
     (log:debug "Joined")
     run-flag))
@@ -73,16 +79,26 @@
 	(lock (bt:make-lock))
 	(timer-run-flag 0))
 
+    (cc-event:base-init eb)
+    (log:info "submit eb-c: ~a" (cc-event:base-c eb))
+    (log:debug "trace loop started: ~a"
+	       (cc-event:base-loop-started-p eb))
+    
     (setf thread
 	  (bt:make-thread
 	   (lambda ()
+	     (log:debug "in lambda eb-c: ~a"
+			(cc-event:base-c eb))
 	     (wait-base-start eb)
-	     (log:debug "loop started")
+	     (log:debug "loop started: ~a"
+			(cc-event:base-loop-started-p eb))
 
  	     (loop for i from 0 upto (- cnt 1)
 		   do
 		      (sleep 1)
-		      (log:info "submit ~a at ~a" i (local-time:now))
+		      (log:info "in loop eb-c=~a" (cc-event:base-c eb))
+		      (log:info "submit ~a at ~a ---"
+				i (local-time:now))
 		      (cc-event:timer-submit
 		       eb
 		       '(3 0)
@@ -95,10 +111,11 @@
 	     (loop while (> cnt (bt:with-lock-held (lock) timer-run-flag))
 		   do
 		      (sleep 0.1))
-	     (cc-event:stop eb))))
+	     (cc-event:base-loop-stop eb))))
 
     (log:debug "starting loop")
-    (cc-event:start eb)
+    (cc-event:base-loop-start eb)
+    (cc-event:base-deinit eb)
     (log:debug "loop stoped")
 
     (bt:join-thread thread)

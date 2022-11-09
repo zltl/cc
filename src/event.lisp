@@ -1,6 +1,10 @@
 (in-package :cc-event)
 
 
+;; use pthread globally
+(cc-libevent:evthread-use-pthreads)
+
+
 ;; id generator for base:id
 ;; class BASE have an id field, function next-id generate an autoincrement
 ;; integer id for it.
@@ -37,6 +41,11 @@
 event has no socket."
   (cc-libevent:event-get-fd (event-c ev)))
 
+(defun event-types (ev)
+  "Get the event that triggered, only canbe call from event
+callback functions."
+  (event-triggered-event-types ev))
+
 
 
 ;; map from C event pointer to struct event
@@ -68,6 +77,10 @@ event has no socket."
   ((c :accessor base-c :initarg c :initform nil
       :documentation "Holds the C object that event_base_new() created.")
 
+   (dns-c :accessor base-dns-c :initarg dns-c :initform nil
+	  :documentation "Holds the C object that evdns_base-new()
+	  created.")
+   
    (ev :accessor base-ev :initarg ev :initform nil
        :documentation "Holds the event for running differ queues tasks")
 
@@ -78,24 +91,32 @@ event has no socket."
        :initform (lparallel.queue:make-queue
 		  :fixed-capacity *default-defer-task-queue-size*))
 
-   (lock :accessor base-lock :initarg :lock :initform (bt:make-lock)))
+   (lock :accessor base-lock :initarg :lock :initform (bt:make-lock))
+
+   (started :accessor base-started :initarg :started :initform nil
+	    :documentation "Flag to specify that if loop started and
+	    not stop yet."))
 
   (:documentation
    "A class that holds event base and all the state it manages."))
 
 
 
-;; Callback function that event base differ task will excecute
+;; Callback function call be libevent when event trigger.
+;; Find the lispy event from hash-table and call the real
+;; function in lisp.
 (defcallback base-event-callback :void
     ((fd :int) (event-types :short) (arg :pointer))
   ;; arg always be pointer to event it self
   (let* ((ev (event-table-get arg))
 	 (cb-args (event-cb-arg-list ev)))
     (if ev
-	;; call cb if ev exists
+        
 	;; (apply (alexandria:curry (event-cb ev) ev) cb-args)
 	;; seems APPLY is enough
-	(apply (event-cb ev) ev cb-args)	
+	(progn
+	  (setf (event-triggered-event-types ev) event-types)
+	  (apply (event-cb ev) ev cb-args))
 
 	;; log error if event-struct not exists
 	;; MUST be a bug here
@@ -114,12 +135,36 @@ event has no socket."
     (event-table-set event-c event)
     event))
 
-(defmethod event-free (event)
+(defun event-free (event)
   "Deallocate event struct and free c event. If the event is pending or
 active, this function makes it non-pending and non-active first."
-  (cc-libevent:event-free (event-c event))
-  (event-table-del (event-c event)))
+  (defer-submit (event-base event)
+      (lambda()
+	(and (event-c event)
+	    (cc-libevent:event-free (event-c event))
+	    (event-table-del (event-c event))
+	    (setf (event-c event) nil)))))
 
+(defun event-add (ev timeout)
+  "Add event to the set of pending events
+EB: base
+EV: the event struct
+TIMEOUT: '(second, microsecond) the time to wait for the event"
+  (defer-submit (event-base ev)
+      (lambda ()
+	(and (event-c ev)
+	     (let ((eb (event-base ev)))
+	       (cc-timeval:with-c-timeval-values tv timeout
+		 (cc-libevent:event-add (event-c ev) tv)))))))
+
+(defun event-del (event)
+  "Remove an event from the set of monitored events."
+  (defer-submit (event-base ev)
+      (lambda ()
+	(and (event-c event)
+	     (cc-libevent:event-del (event-c event))))))
+
+  
 
 
 ;; struct holding defer task fn and arg
@@ -143,7 +188,7 @@ active, this function makes it non-pending and non-active first."
   "Callback of defer task event."
   (defer-task-runner (event-base event) event))
 
-(defmethod defer-submmit ((eb base) cb &optional &rest cb-args)
+(defmethod defer-submit ((eb base) cb &optional &rest cb-args)
   "Submit defer task."
   (lparallel.queue:push-queue
    (make-defer-task :cb cb :cb-args cb-args)
@@ -167,77 +212,96 @@ active, this function makes it non-pending and non-active first."
   ;; free event
   (event-free event))
 
-(defun real-timer-submit (eb ttl cb &optional &rest cb-args)
-  "Create a timer event.
-TTL: '(second, microsecond) the time to wait for the event
-CB: callback function when timer trigger. Form as (cb event event-types cb-arg)
-CB-ARG-LIST: arguments of cb
-"
-  (let* ((timer (make-timer :cb cb :cb-args cb-args))
-	 (event (event-new eb -1 0 #'timer-base-callback timer))
-	 (res 0))
-    (cc-timeval:with-c-timeval-value
-	tv (car ttl) (car (cdr ttl))
-      (cc-libevent:event-add (event-c event) tv))))
+(defmethod timer-submit ((eb base) timeout cb &optional &rest cb-args)
+  "Create, pending and return timer event. The return value can be use
+  EVENT-FREE to cancel
 
-(defmethod timer-submit ((eb base) ttl cb &optional &rest cb-args)
-  "Create a timer event.
-TTL: '(second, microsecond) the time to wait for the event
+TIMEOUT: '(second, microsecond) the time to wait for the event
 CB: callback function when timer trigger. Form as (cb event event-types cb-arg)
 CB-ARG-LIST: arguments of cb
 "
   ;; for multiple thread app, we add timer task in a defer task
-  (apply #'defer-submmit eb #'real-timer-submit eb ttl cb cb-args))
+  (let* ((timer (make-timer :cb cb :cb-args cb-args))
+	 (event (event-new eb -1 0 #'timer-base-callback timer)))
+    (event-add event timeout)
+    event))
 
-(defmethod %init ((eb base))
+(defmethod base-init/nolock ((eb base))
   "Alloc c and ev"
   ;; just return if already init
-  (if (base-c eb)
-      ()
+  
+  (or (base-c eb)
+      
       (let* ((eb-c (cc-libevent:event-base-new))
+	     ;; new dns-base
+	     (dns-c nil)
 	     ;; new defer task notificer event
 	     (eb-ev nil))
+        
 	;; error when return null
 	(and (null-pointer-p eb-c)
 	     (error cc-error:oom :msg "event-base-new"))
+
+ 	(setf dns-c
+ 	      (cc-libevent:evdns-base-new
+ 	       eb-c
+ 	       cc-libevent:*EVDNS-BASE-INITIALIZE-NAMESERVERS*))
+	
+	(and (null-pointer-p dns-c)
+	     (progn
+	       (cc-libevent:event-base-free eb-c)
+	       (error cc-error:oom :msg "evdns-base-new")))
+
 	(setf (base-c eb) eb-c)
+	(setf (base-dns-c eb) dns-c)	
 	(setf eb-ev (event-new eb -1 cc-libevent:*EV-PERSIST*
 			       #'defer-task-callback))
-	(setf (base-ev eb) eb-ev))))
+	(setf (base-ev eb) eb-ev)))
+  eb)
 
-(defmethod %deinit ((eb base))
-  "Dealloc c and ev"
-  (if (base-c eb)
-      (progn (cc-libevent:event-free (event-c (base-ev eb)))
-	     (cc-libevent:event-base-free (base-c eb))
-	     (setf (base-ev eb) nil)
-	     (setf (base-c eb) nil))))
-
-(defmethod %start ((eb base))
-  (unwind-protect
-       (progn
-	 (bt:with-lock-held ((base-lock eb))
-	   (%init eb))
-	 ;; start loop
-	 (cc-libevent:event-base-loop
-	  (base-c eb)
-	  cc-libevent:*EVLOOP-NO-EXIT-ON-EMPTY*))
-    
-    (progn
-      (log:debug "event base ~a exited" (base-id eb))
-      (bt:with-lock-held ((base-lock eb))
-	(%deinit eb)))))
-
-(defmethod start ((eb base))
-  "Init and start the event loop"
-  (cc-libevent:evthread-use-pthreads)
-  (%start eb))
-
-(defmethod started-p ((eb base))
-  "Return t if loop started, else nil."
+(defmethod base-init ((eb base))
+  "Initialize base"
   (bt:with-lock-held ((base-lock eb))
-    (and (base-c eb) (base-ev eb))))
+    (base-init/nolock eb)))
 
-(defmethod stop ((eb base))
+(defmethod base-deinit/nolock ((eb base))
+  "Dealloc c and ev"
+
+  (and (base-ev eb)
+       (cc-libevent:event-free (event-c (base-ev eb))))
+  (and (base-dns-c eb)
+       (cc-libevent:evdns-base-free (base-dns-c eb) 0))
+  (and (base-c eb)
+       (cc-libevent:event-base-free (base-c eb)))
+  (setf (base-ev eb) nil)
+  (setf (base-c eb) nil)
+  (setf (base-dns-c eb) nil))
+
+(defmethod base-deinit ((eb base))
+  "Uninitialize base"
+  (bt:with-lock-held ((base-lock eb))
+    (base-deinit/nolock eb)))
+
+(defmethod base-loop-started-p ((eb base))
+  "Return t if loop started"
+  (bt:with-lock-held ((base-lock eb))
+    (base-started eb)))
+
+(defmethod base-loop-start ((eb base))
+  "Wait for events to become active, and run their callbacks."
+  ;; start loop
+  (or (base-loop-started-p eb)
+      (progn
+	(bt:with-lock-held ((base-lock eb))
+	  (setf (base-started eb) t))
+	(cc-libevent:event-base-loop
+	 (base-c eb)
+	 cc-libevent:*EVLOOP-NO-EXIT-ON-EMPTY*)
+	(bt:with-lock-held ((base-lock eb))
+	  (setf (base-started eb) nil)))))
+
+(defmethod base-loop-stop ((eb base))
   "Stop the event loop."
-  (cc-libevent:event-base-loopexit (base-c eb) (null-pointer)))
+  (and (base-loop-started-p eb)
+       (cc-libevent:event-base-loopexit (base-c eb) (null-pointer))))
+
