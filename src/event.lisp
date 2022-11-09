@@ -278,7 +278,7 @@ CB-ARG-LIST: arguments of cb
   (setf (base-dns-c eb) nil))
 
 (defmethod base-deinit ((eb base))
-  "Uninitialize base"
+  "Uninitialize base, free C objects."
   (bt:with-lock-held ((base-lock eb))
     (base-deinit/nolock eb)))
 
