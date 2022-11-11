@@ -34,7 +34,9 @@
 				     (:file "conf")
 				     (:file "util")
 				     (:file "error")
-				     (:file "event"))))
+				     (:file "event")
+				     (:file "dns")
+				     (:file "ip"))))
 
   ;; Build a binary:
   ;; don't change this line.

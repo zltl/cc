@@ -253,6 +253,7 @@
    :bufferevent-rate-limit-group-decrement-write
    :bufferevent-rate-limit-group-get-totals
    :bufferevent-rate-limit-group-reset-totals
+   :evutil-freeaddrinfo
    :evutil-socketpair
    :evutil-make-socket-nonblocking
    :evutil-make-listen-socket-reuseable
@@ -482,6 +483,10 @@
 (defpackage :cc-event
   (:use :cl :cffi)
   (:export
+   :event-table-get
+   :event-table-set
+   :event-table-del
+   
    :event
    :event-c
    :event-base
@@ -519,3 +524,26 @@
    :timer-submit
    
    ))
+
+(defpackage :cc-dns
+  (:use :cl :cffi)
+  (:export
+   :dns-lookup))
+
+(defpackage :cc-ip
+  (:use :cl :cffi)
+  (:export
+   :*AF-INET*
+   :*AF-INET6*
+   :*V4*
+   :*V6*
+   :ip
+   :ip-family
+   :ip-addr
+   :ip-to-string
+   :ip-from-string
+   :ip-from-c-sockaddr
+   :ip-from-c-addr
+   :ipv4-address-p
+   :ipv6-address-p
+   :ip-equal))

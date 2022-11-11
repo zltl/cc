@@ -102,7 +102,7 @@ callback functions."
 
 
 
-;; Callback function call be libevent when event trigger.
+;; Callback function called by libevent when event trigger.
 ;; Find the lispy event from hash-table and call the real
 ;; function in lisp.
 (defcallback base-event-callback :void
@@ -252,6 +252,10 @@ CB-ARG-LIST: arguments of cb
 	       (cc-libevent:event-base-free eb-c)
 	       (error cc-error:oom :msg "evdns-base-new")))
 
+	;; load /etc/hosts
+	(with-foreign-string (fname "/etc/hosts")
+	  (cc-libevent:evdns-base-load-hosts dns-c fname))
+        
 	(setf (base-c eb) eb-c)
 	(setf (base-dns-c eb) dns-c)	
 	(setf eb-ev (event-new eb -1 cc-libevent:*EV-PERSIST*

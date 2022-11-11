@@ -122,8 +122,50 @@
     (log:debug "Joined")
     timer-run-flag))
 
+
+(defun resolve-test ()
+  (let ((eb (make-instance 'cc-event:base))
+	(thread nil)
+	(lock (bt:make-lock))
+	(cb-flag nil))
+
+    (cc-event:base-init eb)
+    
+    (setf thread
+	  (bt:make-thread
+	   (lambda ()
+	     (log:debug "in lambda eb-c: ~a"
+			(cc-event:base-c eb))
+	     (wait-base-start eb)
+	     (log:debug "loop started: ~a"
+			(cc-event:base-loop-started-p eb))
+
+             (cc-dns:dns-lookup
+	      eb "www.baidu.com"
+	      (lambda (iplist  a b c d)
+		(log:info "CB ~a ~a ~a ~a ~a" a b c d iplist)
+		(bt:with-lock-held (lock) (setf cb-flag t))
+		(dolist (ip iplist)
+		  (log:info "get ip: ~a" (cc-ip:ip-to-string ip))))
+	      1 2 3 4)
+	     (loop while (bt:with-lock-held (lock) cb-flag)
+		   do
+		      (sleep 0.1))	     
+	     (cc-event:base-loop-stop eb))))
+
+    (log:debug "starting loop")
+    (cc-event:base-loop-start eb)
+    (cc-event:base-deinit eb)
+    (log:debug "loop stoped")
+
+    (bt:join-thread thread)
+    (log:debug "Joined")
+    )
+  1)
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))
-      (is (= 3 (timer-test 3))))
+      (is (= 3 (timer-test 3)))
+      (is (= 1 (resolve-test))))
 

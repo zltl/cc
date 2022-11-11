@@ -941,6 +941,10 @@
 
 
 ;; start event2/util.h
+
+(defcfun (evutil-freeaddrinfo "evutil_freeaddrinfo") :void
+  (ai :pointer))
+
 (defcfun (evutil-socketpair "evutil_socketpair") :int
   (d :int)
   (type :int)
