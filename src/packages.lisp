@@ -253,6 +253,8 @@
    :bufferevent-rate-limit-group-decrement-write
    :bufferevent-rate-limit-group-get-totals
    :bufferevent-rate-limit-group-reset-totals
+   :evutil-inet-ntop
+   :evutil-inet-pton
    :evutil-freeaddrinfo
    :evutil-socketpair
    :evutil-make-socket-nonblocking

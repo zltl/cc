@@ -942,6 +942,18 @@
 
 ;; start event2/util.h
 
+
+(defcfun (evutil-inet-ntop "evutil_inet_ntop") :string
+  (af :int)
+  (src :pointer)
+  (dst :string)
+  (size :size))
+
+(defcfun (evutil-inet-pton "evutil_inet_pton") :int
+  (af :int)
+  (src :string)
+  (dst :pointer))
+
 (defcfun (evutil-freeaddrinfo "evutil_freeaddrinfo") :void
   (ai :pointer))
 

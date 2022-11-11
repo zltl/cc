@@ -1,6 +1,10 @@
 
 (in-package :cc-tests)
 
+(def-suite conf
+  :description "test cc-conf package")
+(in-suite conf)
+
 (setf (cc-conf:try-files cc-conf:*default-conf*)
       (list "./tests/test-config.yaml"
 	    "no-exists-file-path-xxxxx")

@@ -50,17 +50,6 @@
   (or (ipv4-address-p addr)
       (ipv6-address-p addr)))
 
-(defcfun (inet-ntop "inet_ntop") :string
-  (af :int)
-  (src :pointer)
-  (dst :string)
-  (size :size))
-
-(defcfun (inet-pton "inet_pton") :int
-  (af :int)
-  (src :string)
-  (dst :pointer))
-
 (defmethod ip-len ((ip ip))
   "Get the length of ip address. 4 -> ipv4, 16 -> ipv6"
   (if (eql (ip-family ip) 'V4)
@@ -84,7 +73,7 @@
 	       (setf (mem-aref c-ip :uint8 i) (elt (ip-addr ip) i)))
 
 	     ;; call inet_ntop
-	     (setf res (inet-ntop af c-ip str *max-ip-string-len*)))))))
+	     (setf res (cc-libevent:evutil-inet-ntop af c-ip str *max-ip-string-len*)))))))
 
 (defun ip-from-c-addr (ptr af-family)
   "Convert C inet_addr or inet6_addr to IP instance."
@@ -156,7 +145,7 @@
 
     (with-foreign-object (c-ip :uint8 arr-len)
       (with-foreign-string (c-str str)
-	(setf res (inet-pton af c-str c-ip)))
+	(setf res (cc-libevent:evutil-inet-pton af c-str c-ip)))
       (if (eql res 1)
 	  (ip-from-c-addr c-ip af)))))
 
@@ -164,6 +153,4 @@
   "Convert ip to C then run body"
   `(with-foreign-object (,var :uint8 (ip-len ip))
      ,@body))
-
-
 

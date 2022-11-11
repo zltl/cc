@@ -4,6 +4,10 @@
 
 (ql:quickload "cc")
 
+(def-suite eventest
+  :description "Test event loop")
+(in-suite eventest)
+
 (defun wait-base-start (eb)
   (loop while (not (cc-event:base-loop-started-p eb))
 	do
@@ -53,7 +57,6 @@
 		      (cc-event:defer-submit
 			  eb
 			  (lambda (arg1 arg2 arg3)
-			    (log:debug "defer-task callback invoked")
 			    (bt:with-lock-held (lock)
 			      (setf run-flag (+ run-flag 1))))
 			1 2 3))
@@ -159,8 +162,7 @@
     (log:debug "loop stoped")
 
     (bt:join-thread thread)
-    (log:debug "Joined")
-    )
+    (log:debug "Joined"))
   1)
 
 (test event
