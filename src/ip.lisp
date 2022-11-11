@@ -84,7 +84,7 @@
 	(progn (setf arr-len 16)
 	       (setf family 'V6)))
     (setf addr (make-array arr-len))
-
+    
     (dotimes (i arr-len)      
       (setf (elt addr i) (mem-aref ptr :uint8 i)))
     (make-instance 'ip :ip-family family :ip-addr addr)))
@@ -118,7 +118,7 @@
   (let ((osin_family nil)
 	(inptr nil)
 	(sptr nil))
-    
+
     (with-foreign-slots ((sin_family sin_port sin_addr) ptr (:struct sockaddr-in))
       (setf osin_family sin_family))
 
@@ -129,7 +129,7 @@
 	  (ip-from-c-addr s-addr osin_family))
         (let* ((sin6-addr (foreign-slot-pointer ptr '(:struct sockaddr-in6) 'sin6_addr))
 	       (addr (foreign-slot-pointer sin6-addr '(:struct in6-addr) 'addr)))
-	  (ip-from-c-addr s-addr osin_family)))))
+	  (ip-from-c-addr addr osin_family)))))
 
 (defun ip-from-string (str)
   "Convert ipv4/ipv6 string to IP instance."

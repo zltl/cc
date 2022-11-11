@@ -126,7 +126,7 @@
     timer-run-flag))
 
 
-(defun resolve-test ()
+(defun resolve-test (host)
   (let ((eb (make-instance 'cc-event:base))
 	(thread nil)
 	(lock (bt:make-lock))
@@ -143,15 +143,14 @@
 	     (log:debug "loop started: ~a"
 			(cc-event:base-loop-started-p eb))
 
-             (cc-dns:dns-lookup
-	      eb "www.baidu.com"
+	     (cc-dns:dns-lookup
+	      eb host
 	      (lambda (iplist  a b c d)
-		(log:info "CB ~a ~a ~a ~a ~a" a b c d iplist)
 		(bt:with-lock-held (lock) (setf cb-flag t))
 		(dolist (ip iplist)
 		  (log:info "get ip: ~a" (cc-ip:ip-to-string ip))))
 	      1 2 3 4)
-	     (loop while (bt:with-lock-held (lock) cb-flag)
+	     (loop while (not (bt:with-lock-held (lock) cb-flag))
 		   do
 		      (sleep 0.1))	     
 	     (cc-event:base-loop-stop eb))))
@@ -165,9 +164,11 @@
     (log:debug "Joined"))
   1)
 
+;; (resolve-test "ip6-allnodes")
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))
       (is (= 3 (timer-test 3)))
-      (is (= 1 (resolve-test))))
+      (is (= 1 (resolve-test "quant67.com"))))
 
