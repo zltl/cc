@@ -98,13 +98,13 @@
 
  	     (loop for i from 0 upto (- cnt 1)
 		   do
-		      (sleep 1)
+		      (sleep 0.1)
 		      (log:info "in loop eb-c=~a" (cc-event:base-c eb))
 		      (log:info "submit ~a at ~a ---"
 				i (local-time:now))
 		      (cc-event:timer-submit
 		       eb
-		       '(3 0)
+		       '(1 0)
 		       (lambda (i j k)
 			 (let ((f (bt:with-lock-held (lock)
 				    (log:info "callback ~a at ~a ~a ~a" i (local-time:now) j k)

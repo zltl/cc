@@ -540,6 +540,7 @@
    :*V4*
    :*V6*
    :ip
+   :ip-len
    :ip-family
    :ip-addr
    :ip-to-string
@@ -548,4 +549,5 @@
    :ip-from-c-addr
    :ipv4-address-p
    :ipv6-address-p
+   :ip-address-p
    :ip-equal))
