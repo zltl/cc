@@ -547,5 +547,10 @@
    :ip-address-p
    :ip-equal
 
+   :sockaddr
+   :sockaddr-ip
+   :sockaddr-port
+   :sockaddr-from-c
+
    :dns-lookup))
 

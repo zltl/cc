@@ -114,22 +114,8 @@
 
 
 (defun ip-from-c-sockaddr (ptr)
-  "Convert C sockaddr struct to IP instance."
-  (let ((osin_family nil)
-	(inptr nil)
-	(sptr nil))
-
-    (with-foreign-slots ((sin_family sin_port sin_addr) ptr (:struct sockaddr-in))
-      (setf osin_family sin_family))
-
-    ;; ipv4
-    (if (eql osin_family *AF-INET*)
-        (let* ((sin-addr (foreign-slot-pointer ptr '(:struct sockaddr-in) 'sin_addr))
-	       (s-addr (foreign-slot-pointer sin-addr '(:struct in-addr-t) 's_addr)))
-	  (ip-from-c-addr s-addr osin_family))
-        (let* ((sin6-addr (foreign-slot-pointer ptr '(:struct sockaddr-in6) 'sin6_addr))
-	       (addr (foreign-slot-pointer sin6-addr '(:struct in6-addr) 'addr)))
-	  (ip-from-c-addr addr osin_family)))))
+  (let ((so (sockaddr-from-c ptr)))
+    (sockaddr-ip so)))
 
 (defun ip-from-string (str)
   "Convert ipv4/ipv6 string to IP instance."
@@ -153,4 +139,40 @@
   "Convert ip to C then run body"
   `(with-foreign-object (,var :uint8 (ip-len ip))
      ,@body))
+
+
+
+
+(defclass sockaddr ()
+    ((ip :accessor sockaddr-ip :initarg :ip :initform nil
+	 :documentation "The ip address of socket")
+     
+     (port :accessor sockaddr-port :initarg :port :initform nil
+	   :documentation "Port of TCP/UDP")))
+
+
+(defun sockaddr-from-c (ptr)
+  "Create sockaddr object from c sockaddr_in"
+  (let ((osin_family nil)
+	(inptr nil)
+	(sptr nil)
+	(port 0))
+
+    (with-foreign-slots ((sin_family sin_port sin_addr) ptr (:struct sockaddr-in))
+      (setf osin_family sin_family)
+      (setf port sin_port))
+
+    (let
+	((mip
+	   (if (eql osin_family *AF-INET*)
+	       ;; ipv4	
+	       (let* ((sin-addr (foreign-slot-pointer ptr '(:struct sockaddr-in) 'sin_addr))
+		      (s-addr (foreign-slot-pointer sin-addr '(:struct in-addr-t) 's_addr)))
+		 (ip-from-c-addr s-addr osin_family))
+	       ;; ipv6
+	       (let* ((sin6-addr (foreign-slot-pointer ptr '(:struct sockaddr-in6) 'sin6_addr))
+		      (addr (foreign-slot-pointer sin6-addr '(:struct in6-addr) 'addr)))
+		 (ip-from-c-addr addr osin_family)))))
+      (make-instance 'sockaddr :ip mip :port port))))
+
 
