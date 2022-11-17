@@ -18,6 +18,15 @@
       r)))
 
 
+(defconstant *EV-TIMEOUT* #x01)
+(defconstant *EV-READ* #x02)
+(defconstant *EV-WRITE* #x04)
+(defconstant *EV-SIGNAL* #x08)
+(defconstant *EV-PERSIST* #x10)
+(defconstant *EV-ET* #x20)
+(defconstant *EV-FINALIZE* #x40)
+(defconstant *EV-CLOSED* #x80)
+
 ;; wraper for C libevent's event, containing C event, base instance and
 ;; callback functions.
 (defstruct event
@@ -139,7 +148,7 @@ callback functions."
   "Deallocate event struct and free c event. If the event is pending or
 active, this function makes it non-pending and non-active first."
   (defer-submit (event-base event)
-      (lambda()
+      (lambda ()
 	(and (event-c event)
 	    (cc-libevent:event-free (event-c event))
 	    (event-table-del (event-c event))
@@ -309,3 +318,38 @@ CB-ARG-LIST: arguments of cb
   (and (base-loop-started-p eb)
        (cc-libevent:event-base-loopexit (base-c eb) (null-pointer))))
 
+
+
+(defstruct bufev
+  ;; result of bufferevent_new()
+  c
+
+  ;; the base object
+  base
+
+  ;; (read-cb bev cb-args...)
+  read-cb
+  ;; (write-cb bev cb-args...)
+
+
+  ;; arguments of readcb, writecb, errorcb
+  cb-args
+  )
+
+(defconstant *BEV-OPT-CLOSE-ON-FREE* #x01)
+(defconstant *BEV-OPT-THREADSAFE* #x02)
+(defconstant *BEV-OPT-DEFER-CALLBACKS* #x04)
+(defconstant *BEV-OPT-UNLOCK-CALLBACKS* #x08)
+
+(defun bufev-socket-new (bev fd options)
+  "Create a new socket bev over an existing socket.
+BEV: the base instance
+FD: the file descriptor from which data is read and written to, or -1.
+OPTIONS: zero or more *BEV-OPT-* flags
+return an instance of struct bufev  
+"
+  (let ((e (make-bufev :base bev))
+	(c (cc-libevent:bufferevent-socket-new (base-c base) fd options)))
+    (setf (bufev-c e) c)
+
+    e))

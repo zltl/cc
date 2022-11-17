@@ -1,4 +1,4 @@
-(in-package :cc-ip)
+(in-package :cc-net)
 
 (defconstant *AF-INET* 2)
 (defconstant *AF-INET6* 10)

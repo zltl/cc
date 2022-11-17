@@ -36,7 +36,8 @@
 				     (:file "error")
 				     (:file "event")
 				     (:file "dns")
-				     (:file "ip"))))
+				     (:file "ip")
+				     )))
 
   ;; Build a binary:
   ;; don't change this line.

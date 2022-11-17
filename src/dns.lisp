@@ -1,4 +1,4 @@
-(in-package :cc-dns)
+(in-package :cc-net)
 
 (defstruct dns-task
   ;; (cb ip-list cb-args...)
@@ -36,8 +36,8 @@
 		   ai_addr
 		   ai_canonname
 		   ai_next) inf (:struct linux-addrinfo))
-	       (let ((ip (cc-ip:ip-from-c-sockaddr ai_addr)))
-		 (setf ipset (adjoin ip ipset :test #'cc-ip:ip-equal)))
+	       (let ((ip (cc-net:ip-from-c-sockaddr ai_addr)))
+		 (setf ipset (adjoin ip ipset :test #'cc-net:ip-equal)))
 	       (setf inf ai_next)))
     (apply (dns-task-cb task) ipset (dns-task-cb-args task)))
 

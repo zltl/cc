@@ -527,12 +527,7 @@
    
    ))
 
-(defpackage :cc-dns
-  (:use :cl :cffi)
-  (:export
-   :dns-lookup))
-
-(defpackage :cc-ip
+(defpackage :cc-net
   (:use :cl :cffi)
   (:export
    :*AF-INET*
@@ -550,4 +545,7 @@
    :ipv4-address-p
    :ipv6-address-p
    :ip-address-p
-   :ip-equal))
+   :ip-equal
+
+   :dns-lookup))
+

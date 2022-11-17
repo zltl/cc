@@ -143,12 +143,12 @@
 	     (log:debug "loop started: ~a"
 			(cc-event:base-loop-started-p eb))
 
-	     (cc-dns:dns-lookup
+	     (cc-net:dns-lookup
 	      eb host
 	      (lambda (iplist  a b c d)
 		(bt:with-lock-held (lock) (setf cb-flag t))
 		(dolist (ip iplist)
-		  (log:info "get ip: ~a" (cc-ip:ip-to-string ip))))
+		  (log:info "get ip: ~a" (cc-net:ip-to-string ip))))
 	      1 2 3 4)
 	     (loop while (not (bt:with-lock-held (lock) cb-flag))
 		   do
