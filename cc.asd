@@ -37,6 +37,7 @@
 				     (:file "event")
 				     (:file "dns")
 				     (:file "ip")
+				     (:file "net")
 				     )))
 
   ;; Build a binary:

@@ -166,6 +166,41 @@
 
 ;; (resolve-test "ip6-allnodes")
 
+(defun tcp-connect-test (n)
+  "test cc-event tcp task"
+  (let* ((eb (make-instance 'cc-event:base))
+	 (bev nil)
+	 (thread nil)
+	 (lock (bt:make-lock))
+	 (run-flag 0))
+
+    (cc-event:base-init eb)
+    (setf bev (cc-net:bufev-socket-new eb -1 0))    
+    
+    (setf thread
+	  (bt:make-thread
+	   (lambda ()
+	     (wait-base-start eb)
+	     (log:debug "loop started")
+	     (cc-net:bufev-tcp-connect bev "www.baidu.com" 80)
+             
+             (sleep 1)
+             
+	     (log:debug "stoping loop")
+	     (cc-event:base-loop-stop eb))))
+
+    (log:debug "starting loop")
+    (cc-event:base-loop-start eb)
+    (cc-event:base-deinit eb)
+    (log:debug "loop stoped")
+    
+    (bt:join-thread thread)
+    (log:debug "Joined")
+    run-flag))
+
+(tcp-connect-test 3)
+
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))

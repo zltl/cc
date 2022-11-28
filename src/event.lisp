@@ -318,40 +318,3 @@ CB-ARG-LIST: arguments of cb
   (and (base-loop-started-p eb)
        (cc-libevent:event-base-loopexit (base-c eb) (null-pointer))))
 
-
-
-(defstruct bufev
-  ;; result of bufferevent_new()
-  c
-
-  ;; the base object
-  base
-
-  ;; (read-cb bev cb-args...)
-  read-cb
-  ;; (write-cb bev cb-args...)
-
-
-  ;; arguments of readcb, writecb, errorcb
-  cb-args
-  )
-
-(defconstant *BEV-OPT-CLOSE-ON-FREE* #x01)
-(defconstant *BEV-OPT-THREADSAFE* #x02)
-(defconstant *BEV-OPT-DEFER-CALLBACKS* #x04)
-(defconstant *BEV-OPT-UNLOCK-CALLBACKS* #x08)
-
-(defun bufev-socket-new (bev fd options)
-  "Create a new socket bev over an existing socket.
-BEV: the base instance
-FD: the file descriptor from which data is read and written to, or -1.
-OPTIONS: zero or more *BEV-OPT-* flags
-return an instance of struct bufev  
-"
-  (let ((e (make-bufev :base bev))
-	(c (cc-libevent:bufferevent-socket-new (base-c base) fd options)))
-    (setf (bufev-c e) c)
-
-    e))
-
-

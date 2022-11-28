@@ -524,11 +524,10 @@
    :defer-submit
 
    :timer-submit
-   
    ))
 
 (defpackage :cc-net
-  (:use :cl :cffi)
+  (:use :cl :cffi :cc-event)
   (:export
    :*AF-INET*
    :*AF-INET6*
@@ -552,5 +551,9 @@
    :sockaddr-port
    :sockaddr-from-c
 
-   :dns-lookup))
+   :dns-lookup
+
+   :bufev-socket-new
+   :bufev-free
+   :bufev-tcp-connect))
 
