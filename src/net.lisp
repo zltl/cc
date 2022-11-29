@@ -38,18 +38,52 @@ return an instance of struct bufev
     (event-table-set c e)
     e))
 
+(defun bufev-new (bev options)
+  (bufev-socket-new bev -1 options))
+
 (defun bufev-free (e)
   "Deallocate the bufev instance E."
   (cc-libevent:bufferevent-free (bufev-c e)))
 
-;; TODO: defcfuncs 
+;; TODO: defcfuncs
+
+(defcallback b-event-read-callback :void
+    ((e-ptr :pointer) (ctx :pointer))
+  (let* ((e (event-table-get e-ptr))
+	 (cb-args (bufev-cb-args e))
+	 (read-cb (bufev-read-cb e)))
+    (if read-cb 
+	(apply read-cb e cb-args))))
+
+(defcallback b-event-write-callback :void
+    ((e-ptr :pointer) (ctx :pointer))
+  (let* ((e (event-table-get e-ptr))
+	 (cb-args (bufev-cb-args e))
+	 (write-cb (bufev-write-cb e)))
+    (if write-cb 
+	(apply write-cb e cb-args))))
+
+(defcallback b-event-event-callback :void
+    ((e-ptr :pointer) (what :short) (ctx :pointer))
+  (let* ((e (event-table-get e-ptr))
+	 (cb-args (bufev-cb-args e))
+	 (event-cb (bufev-event-cb e)))
+    (if event-cb 
+	(apply event-cb e what cb-args))))
 
 (defun bufev-setcb (e &optional &key read-cb write-cb event-cb cb-args)
   "Changes th ecallbacks for bufev"
-  (setf (bufev-read-cb e) readcb)
-  (setf (bufev-write-cb e) writecb)
-  (setf (bufev-event-cb e) eventcb)
-  (setf (bufev-cb-args e) cbargs)
+  (setf (bufev-read-cb e) read-cb)
+  (setf (bufev-write-cb e) write-cb)
+  (setf (bufev-event-cb e) event-cb)
+  (setf (bufev-cb-args e) cb-args)
+
+  (cc-libevent:bufferevent-setcb
+   (bufev-c e)
+   (if read-cb (callback b-event-read-callback) (null-pointer))
+   (if write-cb (callback b-event-write-callback) (null-pointer))
+   (if event-cb (callback b-event-event-callback) (null-pointer))
+   (null-pointer))
   e)
 
 (defun bufev-tcp-connect (e hostname port)
