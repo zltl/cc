@@ -514,6 +514,7 @@
    :base-loop-start
    :base-loop-stop
    :base-loop-started-p
+   :with-base-loop
    
    :defer-task
    :defer-task-cb

@@ -45,8 +45,6 @@ return an instance of struct bufev
   "Deallocate the bufev instance E."
   (cc-libevent:bufferevent-free (bufev-c e)))
 
-;; TODO: defcfuncs
-
 (defcallback b-event-read-callback :void
     ((e-ptr :pointer) (ctx :pointer))
   (let* ((e (event-table-get e-ptr))

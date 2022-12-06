@@ -318,3 +318,12 @@ CB-ARG-LIST: arguments of cb
   (and (base-loop-started-p eb)
        (cc-libevent:event-base-loopexit (base-c eb) (null-pointer))))
 
+
+;; create event-base eb, run body, then start loop
+(defmacro with-base-loop ((eb) &body body)
+  `(let ((,eb (make-instance 'base)))
+     (base-init ,eb)
+     (defer-submit ,eb (lambda () ,@body))
+     (base-loop-start ,eb)
+     (base-deinit ,eb)))
+

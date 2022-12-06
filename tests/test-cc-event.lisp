@@ -201,9 +201,16 @@
 (tcp-connect-test 3)
 
 
+(defun with-loop-test ()
+  (cc-event:with-base-loop (eb)
+    (log:warn "base loop started")
+    (cc-event:base-loop-stop eb))
+  1)
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))
       (is (= 3 (timer-test 3)))
-      (is (= 1 (resolve-test "quant67.com"))))
+      (is (= 1 (resolve-test "quant67.com")))
+      (is (= 1 (with-loop-test))))
 
