@@ -676,7 +676,8 @@
 (defcfun (bufferevent-get-priority "bufferevent_get_priority") :int
   (bufev :pointer))
 
-(defcfun (bufferevent-free "bufferevent_free") :void)
+(defcfun (bufferevent-free "bufferevent_free") :void
+  (e :pointer))
 
 (defcfun (bufferevent-setcb "bufferevent_setcb") :void
   (bufev :pointer)

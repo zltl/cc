@@ -20,7 +20,9 @@
 	       :alexandria
 	       :parse-float
 	       :bt-semaphore
-	       :lparallel)
+	       :lparallel
+	       :for
+	       :flexi-streams)
 
   ;; Project stucture.
   :serial t

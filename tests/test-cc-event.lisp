@@ -168,37 +168,43 @@
 
 (defun tcp-connect-test (n)
   "test cc-event tcp task"
-  (let* ((eb (make-instance 'cc-event:base))
-	 (bev nil)
-	 (thread nil)
-	 (lock (bt:make-lock))
-	 (run-flag 0))
 
-    (cc-event:base-init eb)
-    (setf bev (cc-net:bufev-socket-new eb -1 0))    
-    
-    (setf thread
-	  (bt:make-thread
-	   (lambda ()
-	     (wait-base-start eb)
-	     (log:debug "loop started")
-	     (cc-net:bufev-tcp-connect bev "www.baidu.com" 80)
-             
-             (sleep 1)
-             
-	     (log:debug "stoping loop")
-	     (cc-event:base-loop-stop eb))))
+  (cc-event:with-base-loop (eb)
+    (let ((bev (cc-net:bufev-socket-new eb -1 
+					cc-net:*BEV-OPT-CLOSE-ON-FREE*))
+	  (run-flag 0)
+	  (get-text "GET / HTTP/1.1
+Host: www.baidu.com
 
-    (log:debug "starting loop")
-    (cc-event:base-loop-start eb)
-    (cc-event:base-deinit eb)
-    (log:debug "loop stoped")
-    
-    (bt:join-thread thread)
-    (log:debug "Joined")
-    run-flag))
-
-(tcp-connect-test 3)
+"))
+      (cc-net:bufev-setcb
+       bev
+       :read-cb
+       (lambda (e)
+	 (log:info "read-cb")
+	 (let* ((x (cc-net:bufev-read e 10000)))
+	   (log:info "reading ~a " (cc-net:buffer-vec-to-string x))
+	   (cc-net:bufev-free e)
+	   (cc-event:base-loop-stop eb)	   
+	   ))
+       :write-cb
+       (lambda (e)
+	 (log:info "write-cb")
+	 (cc-net:bufev-enable e cc-net:*EV-READ*)
+	 )
+       :event-cb
+       (lambda (e what)
+	 (log:info "event-cb ~X" what)
+	 (if (equal what cc-net:*BEV-EVENT-CONNECTED*)
+	     (progn
+	       (log:info "connected")
+	       (cc-net:bufev-write-string e get-text)
+               (cc-net:bufev-enable e
+				    (logand cc-net:*EV-WRITE*
+					    cc-net:*EV-READ*))))))
+      (cc-net:bufev-tcp-connect bev "www.baidu.com" 80)    
+      ))
+  1)
 
 
 (defun with-loop-test ()
@@ -212,5 +218,6 @@
       (is (= 100 (defer-task-test 100)))
       (is (= 3 (timer-test 3)))
       (is (= 1 (resolve-test "quant67.com")))
-      (is (= 1 (with-loop-test))))
+      (is (= 1 (with-loop-test)))
+      (is (= 1 (tcp-connect-test 1))))
 

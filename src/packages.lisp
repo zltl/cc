@@ -554,7 +554,43 @@
 
    :dns-lookup
 
+   :*EV-TIMEOUT*
+   :*EV-READ*
+   :*EV-WRITE*
+   :*EV-SIGNAL*
+   :*EV-PERSIST*
+   :*EV-ET*
+   :*EV-FINALIZE*
+   :*EV-CLOSED*
+
+   :*BEV-EVENT-READING*
+   :*BEV-EVENT-WRITING*
+   :*BEV-EVENT-EOF*
+   :*BEV-EVENT-ERROR*
+   :*BEV-EVENT-TIMEOUT*
+   :*BEV-EVENT-CONNECTED*
+   :*BEV-OPT-CLOSE-ON-FREE*
+   :*BEV-OPT-THREADSAFE*
+   :*BEV-OPT-DEFER-CALLBACKS*
+   :*BEV-OPT-UNLOCK-CALLBACKS*
    :bufev-socket-new
    :bufev-free
-   :bufev-tcp-connect))
+   :bufev-tcp-connect
+   :bufev-setcb
+   :bufev-enable
+   :bufev-write
+   :bufev-write-string
+   :bufev-read
+   
+   :buffer-new
+   :buffer-free
+   :buffer-add-string
+   :buffer-add
+   :buffer-drain
+   :buffer-length
+   :buffer-nth
+   :buffer-remove
+   :buffer-copyout
+   :buffer-vec-to-string
+   :buffer-string-to-vec))
 
