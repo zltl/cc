@@ -40,6 +40,7 @@
 				     (:file "dns")
 				     (:file "ip")
 				     (:file "net")
+				     (:file "openssl")
 				     )))
 
   ;; Build a binary:

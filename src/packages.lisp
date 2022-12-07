@@ -3,6 +3,16 @@
   (:export :main
 	   :case-expr))
 
+(defpackage :cc-openssl
+  (:use :cl :common-lisp :cffi)
+  (:export
+   :tlsv1.2-method
+   :ssl-ctx-new
+   :ssl-new
+   :ssl-ctx-free
+   :ssl-free
+   :perror))
+
 (defpackage :cc-libevent
   (:use :cl :common-lisp :cffi)
   (:export
@@ -573,14 +583,25 @@
    :*BEV-OPT-THREADSAFE*
    :*BEV-OPT-DEFER-CALLBACKS*
    :*BEV-OPT-UNLOCK-CALLBACKS*
+
    :bufev-socket-new
+   :bufev-tls-socket-new
+   :bufev-new
+   :bufev-tls-new
    :bufev-free
    :bufev-tcp-connect
+   :bufev-with-tcp-connect
+   :bufev-tls-connect
+   :bufev-with-tls-connect
+   
    :bufev-setcb
    :bufev-enable
    :bufev-write
    :bufev-write-string
    :bufev-read
+   :bufev-set-timeout
+   :bufev-get-input
+   :bufev-get-output
    
    :buffer-new
    :buffer-free

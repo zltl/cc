@@ -170,40 +170,35 @@
   "test cc-event tcp task"
 
   (cc-event:with-base-loop (eb)
-    (let ((bev (cc-net:bufev-socket-new eb -1 
-					cc-net:*BEV-OPT-CLOSE-ON-FREE*))
-	  (run-flag 0)
-	  (get-text "GET / HTTP/1.1
-Host: www.baidu.com
-
-"))
-      (cc-net:bufev-setcb
-       bev
-       :read-cb
+    (cc-net:bufev-with-tcp-connect
+     eb :host "quant67.com" :port 80
+     :read-cb 
        (lambda (e)
 	 (log:info "read-cb")
 	 (let* ((x (cc-net:bufev-read e 10000)))
-	   (log:info "reading ~a " (cc-net:buffer-vec-to-string x))
+	   (log:info "read size ~a" (length x))
+	   ;; (log:info "reading ~&~a " (cc-net:buffer-vec-to-string x))
 	   (cc-net:bufev-free e)
-	   (cc-event:base-loop-stop eb)	   
-	   ))
-       :write-cb
-       (lambda (e)
-	 (log:info "write-cb")
-	 (cc-net:bufev-enable e cc-net:*EV-READ*)
-	 )
-       :event-cb
-       (lambda (e what)
-	 (log:info "event-cb ~X" what)
-	 (if (equal what cc-net:*BEV-EVENT-CONNECTED*)
-	     (progn
-	       (log:info "connected")
-	       (cc-net:bufev-write-string e get-text)
-               (cc-net:bufev-enable e
-				    (logand cc-net:*EV-WRITE*
-					    cc-net:*EV-READ*))))))
-      (cc-net:bufev-tcp-connect bev "www.baidu.com" 80)    
-      ))
+	   (cc-event:base-loop-stop eb)))
+     :write-cb
+     (lambda (e)
+       (log:info "write-cb")
+       (cc-net:bufev-enable e cc-net:*EV-READ*))
+     :event-cb 
+     (lambda (e what)
+       (log:info "event-cb ~X" what)
+       (if (equal what cc-net:*BEV-EVENT-CONNECTED*)
+	   (progn
+	     (log:info "connected")
+	     (cc-net:bufev-write-string
+	      e
+	      "GET / HTTP/1.1
+Host: quant67.com
+
+")
+	     (cc-net:bufev-enable e
+				  cc-net:*EV-READ*)))))    
+    )
   1)
 
 
@@ -213,11 +208,47 @@ Host: www.baidu.com
     (cc-event:base-loop-stop eb))
   1)
 
+(defun tls-connect-test ()
+  "test cc-event tcp task"
+
+  (cc-event:with-base-loop (eb)
+    (cc-net:bufev-with-tls-connect
+     eb :host "quant67.com" :port 443
+     :read-cb 
+       (lambda (e)
+	 (log:info "read-cb")
+	 (let* ((x (cc-net:bufev-read e 10000)))
+	   (log:info "read size ~a" (length x))	   
+	   ;; (log:info "reading ~&~a " (cc-net:buffer-vec-to-string x))
+	   (cc-net:bufev-free e)
+	   (cc-event:base-loop-stop eb)))
+     :write-cb
+     (lambda (e)
+       (log:info "write-cb")
+       (cc-net:bufev-enable e cc-net:*EV-READ*))
+     :event-cb 
+     (lambda (e what)
+       (log:info "event-cb ~X" what)
+       (if (equal what cc-net:*BEV-EVENT-CONNECTED*)
+	   (progn
+	     (log:info "connected")
+	     (cc-net:bufev-write-string
+	      e
+	      "GET / HTTP/1.1
+Host: quant67.com
+
+")
+	     (cc-net:bufev-enable e
+				  cc-net:*EV-READ*)))))
+    )
+  1)
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))
       (is (= 3 (timer-test 3)))
       (is (= 1 (resolve-test "quant67.com")))
       (is (= 1 (with-loop-test)))
-      (is (= 1 (tcp-connect-test 1))))
+      (is (= 1 (tcp-connect-test 1)))
+      (is (= 1 (tls-connect-test))))
 

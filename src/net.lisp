@@ -16,6 +16,11 @@
 
   ;; arguments of readcb, writecb, errorcb
   cb-args
+
+  ;; ssl
+  ssl
+  ;; ssl-ctx
+  ssl-ctx  
   )
 
 (defconstant *EV-TIMEOUT* #x01)
@@ -54,12 +59,44 @@ return an instance of struct bufev
     (event-table-set c e)
     e))
 
+(defun bufev-tls-socket-new (bev fd options)
+  ;; create SSL*
+  (let* ((method (cc-openssl:tlsv1.2-method))
+	 (ctx (cc-openssl:ssl-ctx-new method))
+	 (ssl nil))
+    (if (null-pointer-p ctx)
+	(progn (cc-openssl:perror)
+	       (cc-error:oom "ssl-ctx-new")))
+    (setf ssl (cc-openssl:ssl-new ctx))
+    (if (null-pointer-p ssl)
+	(progn
+	  (cc-openssl:perror)
+	  (cc-error:oom "ssl-new")))
+
+    ;; create bufferevent
+    (let* ((e (make-bufev :base bev))
+	   (c (cc-libevent:bufferevent-openssl-socket-new
+	       (base-c bev)
+	       fd
+               ssl
+               1 ;; BUFFEREVENT_SSL_CONNECTING
+	       options)))
+      (if (null-pointer-p c)
+	  (error (cc-error:oom "bufferevent-openssl-socket-new")))
+      (setf (bufev-c e) c)
+      (event-table-set c e)
+      e)))
+
 (defun bufev-new (bev options)
   (bufev-socket-new bev -1 options))
+(defun bufev-tls-new (bev options)
+  (bufev-tls-socket-new bev -1 options))
 
 (defun bufev-free (e)
   "Deallocate the bufev instance E."
-  (cc-libevent:bufferevent-free (bufev-c e)))
+  (cc-libevent:bufferevent-free (bufev-c e))
+  (if (bufev-ssl e) (cc-openssl:ssl-free (bufev-ssl e)))
+  (if (bufev-ssl-ctx e) (cc-openssl:ssl-ctx-free (bufev-ssl-ctx e))))
 
 (defcallback b-event-read-callback :void
     ((e-ptr :pointer) (ctx :pointer))
@@ -100,7 +137,6 @@ return an instance of struct bufev
    (null-pointer))
   e)
 
-
 (defun bufev-tcp-connect (e hostname port)
   "Resolve the hostname/ip in remote and connect to it.
 E: bufev instance
@@ -122,7 +158,61 @@ Recognized HOSTNAME formats are:
 	      hname
 	      port)))
       e
-     (error cc-error:cc-error :msg "bufferevent-socket-connect-hostname")))
+      (error cc-error:cc-error :msg "bufferevent-socket-connect-hostname")))
+
+(setf (fdefinition 'bufev-tls-connect) #'bufev-tcp-connect)
+
+(defun bufev-with-tcp-connect (eb
+			   &key host port
+			     read-cb write-cb event-cb
+			     cb-args)
+  "Connect to host:port with callbacks.
+read-cb: (read-cb e ...cb-args)
+write-cb: (write-cb e ...cb-args)
+event-cb: (event-cb e what ..cb-args)
+
+You need to (bufev-free e) when finished"
+  (let ((e (bufev-socket-new eb -1 (logior *BEV-OPT-CLOSE-ON-FREE*
+					   *BEV-OPT-THREADSAFE*))))
+    (bufev-setcb e :read-cb read-cb :write-cb write-cb :event-cb event-cb
+		   :cb-args cb-args)
+    ;; (bufev-enable e (logior *EV-READ* *EV-WRITE*))
+    (bufev-tcp-connect e host port)))
+
+(defun bufev-with-tls-connect (eb
+			   &key host port
+			     read-cb write-cb event-cb
+			     cb-args)
+  "Connect to host:port with callbacks.
+read-cb: (read-cb e ...cb-args)
+write-cb: (write-cb e ...cb-args)
+event-cb: (event-cb e what ..cb-args)
+
+You need to (bufev-free e) when finished"
+  (let ((e (bufev-tls-socket-new eb -1 (logior *BEV-OPT-CLOSE-ON-FREE*
+					       *BEV-OPT-THREADSAFE*))))
+    (bufev-setcb e :read-cb read-cb :write-cb write-cb :event-cb event-cb
+		   :cb-args cb-args)
+    (bufev-tls-connect e host port)))
+
+  (defun bufev-set-timeout (e timeout-read timeout-write)
+  "Set the read and write timeout for a bufferevent
+E: bufev instance
+TIMEOUT-READ: '(second microsecond)
+TIMEOUT-READ: '(second microsecond)
+"
+  (cc-timeval:with-c-timeval-values tv-read timeout-read
+    (cc-timeval:with-c-timeval-values tv-write timeout-write
+      (cc-libevent:bufferevent-set-timeouts (bufev-c e)
+					    tv-read
+					    tv-write))))
+
+(defun bufev-get-input (e)
+  "Return the input buffer."
+  (cc-libevent:bufferevent-get-input (bufev-c e)))
+(defun bufev-get-output (e)
+  "Return the output buffer."
+  (cc-libevent:bufferevent-get-output (bufev-c e)))
 
 (defun bufev-enable (e ev-type)
   "Enable a buferevent
@@ -154,6 +244,7 @@ RETURN 0 if success, -1 error"
     (cc-libevent:bufferevent-write (bufev-c e)
 				   data
 				   size)))
+
 
 (defun bufev-read (e len)
   "Read len bytes of data from e"
