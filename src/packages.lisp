@@ -17,15 +17,15 @@
   (:use :cl :common-lisp :cffi)
   (:export
 
-   :*LEV-OPT-LEAVE-SOCKET-BLOCKING* 
-   :*LEV-OPT-CLOSE-ON-FREE* 
-   :*LEV-OPT-CLOSE-ON-EXEC* 
-   :*LEV-OPT-REUSEABLE* 
-   :*LEV-OPT-THREADSAFE* 
-   :*LEV-OPT-DISABLED* 
-   :*LEV-OPT-DEFERRED-ACCEPT*
-   :*LEV-OPT-REUSEABLE-PORT*
-   :*LEV-OPT-BIND-IPV6ONL*
+   :+LEV-OPT-LEAVE-SOCKET-BLOCKING+ 
+   :+LEV-OPT-CLOSE-ON-FREE+ 
+   :+LEV-OPT-CLOSE-ON-EXEC+ 
+   :+LEV-OPT-REUSEABLE+ 
+   :+LEV-OPT-THREADSAFE+ 
+   :+LEV-OPT-DISABLED+ 
+   :+LEV-OPT-DEFERRED-ACCEPT+
+   :+LEV-OPT-REUSEABLE-PORT+
+   :+LEV-OPT-BIND-IPV6ONL+
 
    :evconnlistener-new-bind
    :evconnlistener-new
@@ -43,24 +43,24 @@
    :event-base-get-method
    :event-get-supported-methods
    :event-gettime-monotonic
-   :*EVENT-BASE-COUNT-ACTIVE*
-   :*EVENT-BASE-COUNT-VIRTUAL*
-   :*EVENT-BASE-COUNT-ADDED*
+   :+EVENT-BASE-COUNT-ACTIVE+
+   :+EVENT-BASE-COUNT-VIRTUAL+
+   :+EVENT-BASE-COUNT-ADDED+
    :event-base-get-num-events
    :event-base-get-max-events
    :event-config-new
    :event-config-free
    :event-config-avoid-method
-   :*EV-FEATURE-ET*
-   :*EV-FEATURE-O1*
-   :*EV-FEATURE-FDS*
-   :*EV-FEATURE-CLOSE*
-   :*EVENT-BASE-FLAG-NOLOCK*
-   :*EVENT-BASE-FLAG-IGNORE-ENV*
-   :*EVENT-BASE-FLAG-STARTUP-IOCP*
-   :*EVENT-BASE-FLAG-NO-CACHE-TIME*
-   :*EVENT-BASE-FLAG-EPOLL-USE-CHANGELIST*
-   :*EVENT-BASE-FLAG-PRECISE-TIMER*
+   :+EV-FEATURE-ET+
+   :+EV-FEATURE-O1+
+   :+EV-FEATURE-FDS+
+   :+EV-FEATURE-CLOSE+
+   :+EVENT-BASE-FLAG-NOLOCK+
+   :+EVENT-BASE-FLAG-IGNORE-ENV+
+   :+EVENT-BASE-FLAG-STARTUP-IOCP+
+   :+EVENT-BASE-FLAG-NO-CACHE-TIME+
+   :+EVENT-BASE-FLAG-EPOLL-USE-CHANGELIST+
+   :+EVENT-BASE-FLAG-PRECISE-TIMER+
    :event-base-get-features
    :event-config-require-features
    :event-config-set-flag
@@ -69,33 +69,33 @@
    :event-base-new-with-config
    :event-base-free
    :event-base-free-nofinalize
-   :*EVENT-LOG-DEBUG*
-   :*EVENT-LOG_MSG*
-   :*EVENT-LOG-WARN*
-   :*EVENT-LOG-ERR*
+   :+EVENT-LOG-DEBUG+
+   :+EVENT-LOG_MSG+
+   :+EVENT-LOG-WARN+
+   :+EVENT-LOG-ERR+
    :event-set-log-callback
    :event-set-fatal-callback
-   :*EVENT-DBG-ALL*
-   :*EVENT-DBG-NONE*
+   :+EVENT-DBG-ALL+
+   :+EVENT-DBG-NONE+
    :event-enable-debug-logging
    :event-base-set
-   :*EVLOOP-ONCE*
-   :*EVLOOP-NONBLOCK*
-   :*EVLOOP-NO-EXIT-ON-EMPTY*
+   :+EVLOOP-ONCE+
+   :+EVLOOP-NONBLOCK+
+   :+EVLOOP-NO-EXIT-ON-EMPTY+
    :event-base-loop
    :event-base-loopexit
    :event-base-loopbreak
    :event-base-loopcontinue
    :event-base-got-exit
    :event-base-got-break
-   :*EV-TIMEOUT*
-   :*EV-READ*
-   :*EV-WRITE*
-   :*EV-SIGNAL*
-   :*EV-PERSIST*
-   :*EV-ET*
-   :*EV-FINALIZE*
-   :*EV-CLOSED*
+   :+EV-TIMEOUT+
+   :+EV-READ+
+   :+EV-WRITE+
+   :+EV-SIGNAL+
+   :+EV-PERSIST+
+   :+EV-ET+
+   :+EV-FINALIZE+
+   :+EV-CLOSED+
    :event-self-cbarg
    :event-new
    :event-assign
@@ -135,11 +135,11 @@
    :event-base-update-cache-time
    :libevent-global-shutdown
    ;; threads
-   :*EVTHREAD-WRITE*
-   :*EVTHREAD-READ*
-   :*EVTHREAD-TRY*
-   :*EVTHREAD-LOCKTYPE-RECURSIVE*
-   :*EVTHREAD-LOCKTYPE-READWRIT*
+   :+EVTHREAD-WRITE+
+   :+EVTHREAD-READ+
+   :+EVTHREAD-TRY+
+   :+EVTHREAD-LOCKTYPE-RECURSIVE+
+   :+EVTHREAD-LOCKTYPE-READWRIT+
    :evthread-set-lock-callbacks
    :evthread-set-condition-callbacks
    :evthread-set-id-callback
@@ -153,7 +153,7 @@
    :evbuffer-enable-locking
    :evbuffer-lock
    :evbuffer-unlock
-   :*EVBUFFER-FLAG-DRAINS-TO-FD*
+   :+EVBUFFER-FLAG-DRAINS-TO-FD+
    :evbuffer-set-flags
    :evbuffer-clear-flags
    :evbuffer-get-length
@@ -202,16 +202,16 @@
    :evbuffer-unfreeze
    :evbuffer-defer-callbacks
    :evbuffer-add-iovec
-   :*BEV-EVENT-READING*
-   :*BEV-EVENT-WRITING*
-   :*BEV-EVENT-EOF*
-   :*BEV-EVENT-ERROR*
-   :*BEV-EVENT-TIMEOUT*
-   :*BEV-EVENT-CONNECTED*
-   :*BEV-OPT-CLOSE-ON-FREE*
-   :*BEV-OPT-THREADSAFE*
-   :*BEV-OPT-DEFER-CALLBACKS*
-   :*BEV-OPT-UNLOCK-CALLBACKS*
+   :+BEV-EVENT-READING+
+   :+BEV-EVENT-WRITING+
+   :+BEV-EVENT-EOF+
+   :+BEV-EVENT-ERROR+
+   :+BEV-EVENT-TIMEOUT+
+   :+BEV-EVENT-CONNECTED+
+   :+BEV-OPT-CLOSE-ON-FREE+
+   :+BEV-OPT-THREADSAFE+
+   :+BEV-OPT-DEFER-CALLBACKS+
+   :+BEV-OPT-UNLOCK-CALLBACKS+
    :bufferevent-socket-new
    :bufferevent-socket-connect
    :bufferevent-socket-connect-hostname
@@ -242,17 +242,17 @@
    :bufferevent-unlock
    :bufferevent-incref
    :bufferevent-decref
-   :*BEV-NORMAL*
-   :*BEV-FLUSH*
-   :*BEV-FINISHED*
+   :+BEV-NORMAL+
+   :+BEV-FLUSH+
+   :+BEV-FINISHED+
    :bufferevent-flush
-   :*BEV-TRIG-IGNORE-WATERMARKS*
-   :*BEV-TRIG-DEFER-CALLBACKS*
+   :+BEV-TRIG-IGNORE-WATERMARKS+
+   :+BEV-TRIG-DEFER-CALLBACKS+
    :bufferevent-trigger
    :bufferevent-trigger-event
-   :*BEV-OK*
-   :*BEV-NEED-MORE*
-   :*BEV-ERROR*
+   :+BEV-OK+
+   :+BEV-NEED-MORE+
+   :+BEV-ERROR+
    :bufferevent-filter-new
    :bufferevent-pair-new
    :bufferevent-pair-get-partner
@@ -294,9 +294,9 @@
    :evutil-closesocket
    :evutil-make-tcp-listen-socket-deferred
    :evutil-parse-sockaddr-port
-   :*EVDNS-BASE-DISABLE-WHEN-INACTIVE*
-   :*EVDNS-BASE-INITIALIZE-NAMESERVERS*
-   :*EVDNS-BASE-NAMESERVERS-NO-DEFAULT*
+   :+EVDNS-BASE-DISABLE-WHEN-INACTIVE+
+   :+EVDNS-BASE-INITIALIZE-NAMESERVERS+
+   :+EVDNS-BASE-NAMESERVERS-NO-DEFAULT+
    :evdns-base-new
    :evdns-base-free
    :evdns-base-clear-host-addresses
@@ -360,7 +360,7 @@
    :evhttp-remove-server-alias
    :evhttp-set-timeout
    :evhttp-set-timeout-tv
-   :*EVHTTP-SERVER-LINGERING-CLOSE*
+   :+EVHTTP-SERVER-LINGERING-CLOSE+
    :evhttp-set-flags
    :evhttp-send-error
    :evhttp-send-reply
@@ -368,15 +368,15 @@
    :evhttp-send-reply-chunk
    :evhttp-send-reply-chunk-with-cb
    :evhttp-send-reply-end
-   :*EVHTTP-REQ-GET*
-   :*EVHTTP-REQ-POST*
-   :*EVHTTP-REQ-HEAD*
-   :*EVHTTP-REQ-PUT*
-   :*EVHTTP-REQ-DELETE*
-   :*EVHTTP-REQ-OPTIONS*
-   :*EVHTTP-REQ-TRACE*
-   :*EVHTTP-REQ-CONNECT*
-   :*EVHTTP-REQ-PATCH*
+   :+EVHTTP-REQ-GET+
+   :+EVHTTP-REQ-POST+
+   :+EVHTTP-REQ-HEAD+
+   :+EVHTTP-REQ-PUT+
+   :+EVHTTP-REQ-DELETE+
+   :+EVHTTP-REQ-OPTIONS+
+   :+EVHTTP-REQ-TRACE+
+   :+EVHTTP-REQ-CONNECT+
+   :+EVHTTP-REQ-PATCH+
    :evhttp-connection-base-bufferevent-new
    :evhttp-connection-get-bufferevent
    :evhttp-connection-get-server
@@ -388,10 +388,10 @@
    :evhttp-request-free
    :evhttp-connection-base-new
    :evhttp-connection-set-family
-   :*EVHTTP-CON-REUSE-CONNECTED-ADDR*
-   :*EVHTTP-CON-READ-ON-WRITE-ERROR*
-   :*EVHTTP-CON-LINGERING-CLOSE*
-   :*EVHTTP-CON-PUBLIC-FLAGS-END
+   :+EVHTTP-CON-REUSE-CONNECTED-ADDR+
+   :+EVHTTP-CON-READ-ON-WRITE-ERROR+
+   :+EVHTTP-CON-LINGERING-CLOSE+
+   :+EVHTTP-CON-PUBLIC-FLAGS-END
    :evhttp-connection-set-flags
    :evhttp-request-own
    :evhttp-request-is-own
@@ -450,13 +450,13 @@
    :evhttp-uri-set-query
    :evhttp-uri-set-fragment
    :evhttp-uri-parse-with-flags
-   :*EVHTTP-URI-MONCONFORMANT
+   :+EVHTTP-URI-MONCONFORMANT
    :evhttp-uri-parse
    :evhttp-uri-free
    :evhttp-uri-join
-   :*BUFFEREVENT-SSL-OPEN*
-   :*BUFFEREVENT-SSL-CONNECTING*
-   :*BUFFEREVENT-SSL-ACCEPTING*
+   :+BUFFEREVENT-SSL-OPEN+
+   :+BUFFEREVENT-SSL-CONNECTING+
+   :+BUFFEREVENT-SSL-ACCEPTING+
    :bufferevent-openssl-filter-new
    :bufferevent-openssl-socket-new
    :bufferevent-openssl-get-allow-dirty-shutdown
@@ -480,6 +480,7 @@
   (:use :cl :local-time :log4cl))
 
 (defpackage :cc-conf
+  (:nicknames :conf)
   (:use :cl)
   (:export
    :*default-conf*
@@ -496,14 +497,17 @@
    :parse-float))
 
 (defpackage :cc-errno
+  (:nicknames :errno)
   (:use :cl :cffi)
   (:export :str :code))
 
 (defpackage :cc-util
+  (:nicknames :util)
   (:use :cl :cffi)
   (:export :make-pointer-eql-able))
 
 (defpackage :cc-error
+  (:nicknames :error)
   (:use :cl)
   (:export
    :cc-error
@@ -512,6 +516,7 @@
    :already-start))
 
 (defpackage :cc-event
+  (:nicknames :event)
   (:use :cl :cffi)
   (:export
    :event-table-get
@@ -557,12 +562,13 @@
    ))
 
 (defpackage :cc-net
+  (:nicknames :net)
   (:use :cl :cffi :cc-event)
   (:export
-   :*AF-INET*
-   :*AF-INET6*
-   :*V4*
-   :*V6*
+   :+AF-INET+
+   :+AF-INET6+
+   :+V4+
+   :+V6+
    :ip
    :ip-len
    :ip-family
@@ -576,7 +582,7 @@
    :ip-address-p
    :ip-equal
    :with-sockaddr-c
-   :*sock-addr-len*
+   :+sock-addr-len+
 
    :sockaddr
    :sockaddr-ip
@@ -586,25 +592,25 @@
 
    :dns-lookup
 
-   :*EV-TIMEOUT*
-   :*EV-READ*
-   :*EV-WRITE*
-   :*EV-SIGNAL*
-   :*EV-PERSIST*
-   :*EV-ET*
-   :*EV-FINALIZE*
-   :*EV-CLOSED*
+   :+EV-TIMEOUT+
+   :+EV-READ+
+   :+EV-WRITE+
+   :+EV-SIGNAL+
+   :+EV-PERSIST+
+   :+EV-ET+
+   :+EV-FINALIZE+
+   :+EV-CLOSED+
 
-   :*BEV-EVENT-READING*
-   :*BEV-EVENT-WRITING*
-   :*BEV-EVENT-EOF*
-   :*BEV-EVENT-ERROR*
-   :*BEV-EVENT-TIMEOUT*
-   :*BEV-EVENT-CONNECTED*
-   :*BEV-OPT-CLOSE-ON-FREE*
-   :*BEV-OPT-THREADSAFE*
-   :*BEV-OPT-DEFER-CALLBACKS*
-   :*BEV-OPT-UNLOCK-CALLBACKS*
+   :+BEV-EVENT-READING+
+   :+BEV-EVENT-WRITING+
+   :+BEV-EVENT-EOF+
+   :+BEV-EVENT-ERROR+
+   :+BEV-EVENT-TIMEOUT+
+   :+BEV-EVENT-CONNECTED+
+   :+BEV-OPT-CLOSE-ON-FREE+
+   :+BEV-OPT-THREADSAFE+
+   :+BEV-OPT-DEFER-CALLBACKS+
+   :+BEV-OPT-UNLOCK-CALLBACKS+
 
    :bufev-socket-new
    :bufev-tls-socket-new
@@ -646,5 +652,12 @@
    :listener-free
    :listener-new
    :listener-new-bind
+   ))
+
+(defpackage :cc-net/http
+  (:nicknames :cc-http :http :net/http)
+  (:use :cl :cffi :cc-event)
+  (:export
+   
    ))
 

@@ -23,32 +23,32 @@
   ssl-ctx  
   )
 
-(defconstant *EV-TIMEOUT* #x01)
-(defconstant *EV-READ* #x02)
-(defconstant *EV-WRITE* #x04)
-(defconstant *EV-SIGNAL* #x08)
-(defconstant *EV-PERSIST* #x10)
-(defconstant *EV-ET* #x20)
-(defconstant *EV-FINALIZE* #x40)
-(defconstant *EV-CLOSED* #x80)
+(defconstant +EV-TIMEOUT+ #x01)
+(defconstant +EV-READ+ #x02)
+(defconstant +EV-WRITE+ #x04)
+(defconstant +EV-SIGNAL+ #x08)
+(defconstant +EV-PERSIST+ #x10)
+(defconstant +EV-ET+ #x20)
+(defconstant +EV-FINALIZE+ #x40)
+(defconstant +EV-CLOSED+ #x80)
 
-(defconstant *BEV-OPT-CLOSE-ON-FREE* #x01)
-(defconstant *BEV-OPT-THREADSAFE* #x02)
-(defconstant *BEV-OPT-DEFER-CALLBACKS* #x04)
-(defconstant *BEV-OPT-UNLOCK-CALLBACKS* #x08)
+(defconstant +BEV-OPT-CLOSE-ON-FREE+ #x01)
+(defconstant +BEV-OPT-THREADSAFE+ #x02)
+(defconstant +BEV-OPT-DEFER-CALLBACKS+ #x04)
+(defconstant +BEV-OPT-UNLOCK-CALLBACKS+ #x08)
 
-(defconstant *BEV-EVENT-READING* #x01)
-(defconstant *BEV-EVENT-WRITING* #x02)
-(defconstant *BEV-EVENT-EOF* #x10)
-(defconstant *BEV-EVENT-ERROR* #x20)
-(defconstant *BEV-EVENT-TIMEOUT* #x40)
-(defconstant *BEV-EVENT-CONNECTED* #x80)
+(defconstant +BEV-EVENT-READING+ #x01)
+(defconstant +BEV-EVENT-WRITING+ #x02)
+(defconstant +BEV-EVENT-EOF+ #x10)
+(defconstant +BEV-EVENT-ERROR+ #x20)
+(defconstant +BEV-EVENT-TIMEOUT+ #x40)
+(defconstant +BEV-EVENT-CONNECTED+ #x80)
 
 (defun bufev-socket-new (bev fd options)
   "Create a new socket bev over an existing socket.
 BEV: the base instance
 FD: the file descriptor from which data is read and written to, or -1.
-OPTIONS: zero or more *BEV-OPT-* flags
+OPTIONS: zero or more +BEV-OPT-* flags
 return an instance of struct bufev  
 "
   (let* ((e (make-bufev :base bev))
@@ -154,7 +154,7 @@ Recognized HOSTNAME formats are:
 	     (cc-libevent:bufferevent-socket-connect-hostname
 	      (bufev-c e)
 	      (base-dns-c (bufev-base e))
-	      cc-net:*AF-INET*
+	      cc-net:+AF-INET+
 	      hname
 	      port)))
       e
@@ -172,8 +172,8 @@ write-cb: (write-cb e ...cb-args)
 event-cb: (event-cb e what ..cb-args)
 
 You need to (bufev-free e) when finished"
-  (let ((e (bufev-socket-new eb -1 (logior *BEV-OPT-CLOSE-ON-FREE*
-					   *BEV-OPT-THREADSAFE*))))
+  (let ((e (bufev-socket-new eb -1 (logior +BEV-OPT-CLOSE-ON-FREE+
+					   +BEV-OPT-THREADSAFE+))))
     (bufev-setcb e :read-cb read-cb :write-cb write-cb :event-cb event-cb
 		   :cb-args cb-args)
     ;; (bufev-enable e (logior *EV-READ* *EV-WRITE*))
@@ -189,8 +189,8 @@ write-cb: (write-cb e ...cb-args)
 event-cb: (event-cb e what ..cb-args)
 
 You need to (bufev-free e) when finished"
-  (let ((e (bufev-tls-socket-new eb -1 (logior *BEV-OPT-CLOSE-ON-FREE*
-					       *BEV-OPT-THREADSAFE*))))
+  (let ((e (bufev-tls-socket-new eb -1 (logior +BEV-OPT-CLOSE-ON-FREE+
+					       +BEV-OPT-THREADSAFE+))))
     (bufev-setcb e :read-cb read-cb :write-cb write-cb :event-cb event-cb
 		   :cb-args cb-args)
     (bufev-tls-connect e host port)))
@@ -323,10 +323,10 @@ RETURN 0 if success, -1 error"
 	       (base-c be)
 	       (callback listener-event-callback)
 	       (null-pointer)
-	       (logior cc-libevent:*LEV-OPT-CLOSE-ON-FREE*
-		       ;; cc-libevent:*LEV-OPT-THREADSAFE*
-		       cc-libevent:*LEV-OPT-REUSEABLE*
-		       cc-libevent:*LEV-OPT-REUSEABLE-PORT*)
+	       (logior cc-libevent:+LEV-OPT-CLOSE-ON-FREE+
+		       ;; cc-libevent:+LEV-OPT-THREADSAFE+
+		       cc-libevent:+LEV-OPT-REUSEABLE+
+		       cc-libevent:+LEV-OPT-REUSEABLE-PORT+)
                -1
 	       sock-c
 	       sock-c-len)))
@@ -346,10 +346,10 @@ RETURN 0 if success, -1 error"
 	       (base-c be)
 	       (callback listener-event-callback)
 	       (null-pointer)
-	       (logior cc-libevent:*LEV-OPT-CLOSE-ON-FREE*
+	       (logior cc-libevent:+LEV-OPT-CLOSE-ON-FREE+
 		       ;; cc-libevent:*LEV-OPT-THREADSAFE*
-		       cc-libevent:*LEV-OPT-REUSEABLE*
-		       cc-libevent:*LEV-OPT-REUSEABLE-PORT*)
+		       cc-libevent:+LEV-OPT-REUSEABLE+
+		       cc-libevent:+LEV-OPT-REUSEABLE-PORT+)
                -1
 	       sock-c
 	       sock-c-len)))

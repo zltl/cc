@@ -18,14 +18,14 @@
       r)))
 
 
-(defconstant *EV-TIMEOUT* #x01)
-(defconstant *EV-READ* #x02)
-(defconstant *EV-WRITE* #x04)
-(defconstant *EV-SIGNAL* #x08)
-(defconstant *EV-PERSIST* #x10)
-(defconstant *EV-ET* #x20)
-(defconstant *EV-FINALIZE* #x40)
-(defconstant *EV-CLOSED* #x80)
+(defconstant +EV-TIMEOUT+ #x01)
+(defconstant +EV-READ+ #x02)
+(defconstant +EV-WRITE+ #x04)
+(defconstant +EV-SIGNAL+ #x08)
+(defconstant +EV-PERSIST+ #x10)
+(defconstant +EV-ET+ #x20)
+(defconstant +EV-FINALIZE+ #x40)
+(defconstant +EV-CLOSED+ #x80)
 
 ;; wraper for C libevent's event, containing C event, base instance and
 ;; callback functions.
@@ -79,7 +79,7 @@ callback functions."
 
 
 ;; default defer queue size 
-(defconstant *default-defer-task-queue-size* 40000)
+(defconstant +default-defer-task-queue-size+ 40000)
 
 ;; the core dispather class
 (defclass base ()
@@ -98,7 +98,7 @@ callback functions."
    (defer-task-queue
        :accessor base-defer-task-queue :initarg defer-task-queue
        :initform (lparallel.queue:make-queue
-		  :fixed-capacity *default-defer-task-queue-size*))
+		  :fixed-capacity +default-defer-task-queue-size+))
 
    (lock :accessor base-lock :initarg :lock :initform (bt:make-lock))
 
@@ -254,7 +254,7 @@ CB-ARG-LIST: arguments of cb
  	(setf dns-c
  	      (cc-libevent:evdns-base-new
  	       eb-c
- 	       cc-libevent:*EVDNS-BASE-INITIALIZE-NAMESERVERS*))
+ 	       cc-libevent:+EVDNS-BASE-INITIALIZE-NAMESERVERS+))
 	
 	(and (null-pointer-p dns-c)
 	     (progn
@@ -267,7 +267,7 @@ CB-ARG-LIST: arguments of cb
         
 	(setf (base-c eb) eb-c)
 	(setf (base-dns-c eb) dns-c)	
-	(setf eb-ev (event-new eb -1 cc-libevent:*EV-PERSIST*
+	(setf eb-ev (event-new eb -1 cc-libevent:+EV-PERSIST+
 			       #'defer-task-callback))
 	(setf (base-ev eb) eb-ev)))
   eb)
@@ -309,7 +309,7 @@ CB-ARG-LIST: arguments of cb
 	  (setf (base-started eb) t))
 	(cc-libevent:event-base-loop
 	 (base-c eb)
-	 cc-libevent:*EVLOOP-NO-EXIT-ON-EMPTY*)
+	 cc-libevent:+EVLOOP-NO-EXIT-ON-EMPTY+)
 	(bt:with-lock-held ((base-lock eb))
 	  (setf (base-started eb) nil)))))
 
@@ -326,4 +326,7 @@ CB-ARG-LIST: arguments of cb
      (defer-submit ,eb (lambda () ,@body))
      (base-loop-start ,eb)
      (base-deinit ,eb)))
+
+
+
 

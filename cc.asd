@@ -42,7 +42,7 @@
 				     (:file "ip")
 				     (:file "net")
 				     (:file "openssl")
-				     )))
+				     (:file "http"))))
 
   ;; Build a binary:
   ;; don't change this line.

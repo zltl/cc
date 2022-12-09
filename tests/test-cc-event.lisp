@@ -183,11 +183,11 @@
      :write-cb
      (lambda (e)
        (log:info "write-cb")
-       (cc-net:bufev-enable e cc-net:*EV-READ*))
+       (cc-net:bufev-enable e cc-net:+EV-READ+))
      :event-cb 
      (lambda (e what)
        (log:info "event-cb ~X" what)
-       (if (equal what cc-net:*BEV-EVENT-CONNECTED*)
+       (if (equal what cc-net:+BEV-EVENT-CONNECTED+)
 	   (progn
 	     (log:info "connected")
 	     (cc-net:bufev-write-string
@@ -197,7 +197,7 @@ Host: quant67.com
 
 ")
 	     (cc-net:bufev-enable e
-				  cc-net:*EV-READ*)))))    
+				  cc-net:+EV-READ+)))))    
     )
   1)
 
@@ -225,11 +225,11 @@ Host: quant67.com
      :write-cb
      (lambda (e)
        (log:info "write-cb")
-       (cc-net:bufev-enable e cc-net:*EV-READ*))
+       (cc-net:bufev-enable e cc-net:+EV-READ+))
      :event-cb 
      (lambda (e what)
        (log:info "event-cb ~X" what)
-       (if (equal what cc-net:*BEV-EVENT-CONNECTED*)
+       (if (equal what cc-net:+BEV-EVENT-CONNECTED+)
 	   (progn
 	     (log:info "connected")
 	     (cc-net:bufev-write-string
@@ -239,7 +239,7 @@ Host: quant67.com
 
 ")
 	     (cc-net:bufev-enable e
-				  cc-net:*EV-READ*)))))
+				  cc-net:+EV-READ+)))))
     )
   1)
 
@@ -261,7 +261,7 @@ Host: quant67.com
 	 (log:info "listener -cb ---")
 	 (let ((econ nil))
 	   (setf econ (cc-net:bufev-socket-new
-		       eb fd cc-net:*BEV-OPT-CLOSE-ON-FREE*))
+		       eb fd cc-net:+BEV-OPT-CLOSE-ON-FREE+))
 	   (cc-net:bufev-setcb
 	    econ
 	    :read-cb
@@ -276,7 +276,7 @@ Host: quant67.com
 	    :event-cb
 	    (lambda (e what)
 	      (log:info "s/event-cb what=~a" what)
-	      (if (/= 0 (logand what cc-net:*BEV-EVENT-EOF*))
+	      (if (/= 0 (logand what cc-net:+BEV-EVENT-EOF+))
 		  (progn
 		    (log:info "s/close...")
 		    (cc-net:bufev-free e)
@@ -286,8 +286,8 @@ Host: quant67.com
 		    (log:info "s/stop loop")
 		    (cc-event:base-loop-stop eb)))))
 
-	   (cc-net:bufev-enable econ (logior cc-net:*EV-READ*
-					     cc-net:*EV-WRITE*)))))
+	   (cc-net:bufev-enable econ (logior cc-net:+EV-READ+
+					     cc-net:+EV-WRITE+)))))
 
       ;; client connect
       (cc-event:defer-submit eb
@@ -310,8 +310,8 @@ Host: quant67.com
 		  (log:info "c/event-cb ~X" what)
 		  (cc-net:bufev-write-string e "hello")		  
 		  (cc-net:bufev-enable e
-				       (logior cc-net:*EV-WRITE*
-					       cc-net:*EV-READ*))))))))
+				       (logior cc-net:+EV-WRITE+
+					       cc-net:+EV-READ+))))))))
   1)
 
 (test event
