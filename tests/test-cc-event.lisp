@@ -252,7 +252,7 @@ Host: quant67.com
   (cc-event:with-base-loop (eb)
     ;; listen
     (let ((sockstr (concatenate 'string
-				"0.0.0.0:"
+				"[::]:"
 				(write-to-string PORT))))
       (cc-net:listener-new
        eb sockstr
@@ -288,6 +288,7 @@ Host: quant67.com
 
 	   (cc-net:bufev-enable econ (logior cc-net:*EV-READ*
 					     cc-net:*EV-WRITE*)))))
+
       ;; client connect
       (cc-event:defer-submit eb
 	  (lambda ()
