@@ -89,6 +89,15 @@
       (setf (elt addr i) (mem-aref ptr :uint8 i)))
     (make-instance 'ip :ip-family family :ip-addr addr)))
 
+(defun ip-copy-to-c-addr (mip ptr)
+  "Convert IP to C inet_addr or inet6_addr"
+  (let ((arr-len (ip-len mip))
+	(addr (ip-addr mip)))
+
+    (setf addr (make-array arr-len))
+    (dotimes (i arr-len)      
+      (setf (mem-aref ptr :uint8 i) (elt addr i)))))
+
 
 ;; ipv4 for linux
 (defcstruct in-addr-t
@@ -98,6 +107,9 @@
   (sin_family :ushort)
   (sin_port :ushort)
   (sin_addr (:struct in-addr-t)))
+
+(defconstant *sockaddr-in-len* (foreign-type-size '(:struct sockaddr-in)))
+
 
 ;; ipv6 for linux
 
@@ -150,6 +162,34 @@
      (port :accessor sockaddr-port :initarg :port :initform nil
 	   :documentation "Port of TCP/UDP")))
 
+(defcfun (htons "htons") :uint16
+  (s :uint16))
+
+(defun sockaddr-to-string (sock)
+  (concatenate 'string
+	       (ip-to-string (sockaddr-ip sock))
+	       ":"
+	       (write-to-string (sockaddr-port sock))))
+
+(defmacro with-sockaddr-c ((sock sock-c sock-c-len) &body body)
+  "Convert sockaddr 'sock' to sockaddr_in 'sock-c' C object and run body."
+  `(with-foreign-pointer (,sock-c (+ *sockaddr-in-len* 100) socklen)
+     (with-foreign-object (socklen-ptr :int 1)
+       (setf (mem-aref socklen-ptr :int 0) socklen)
+       (with-foreign-string (str (sockaddr-to-string sock))
+	 (cc-libevent:evutil-parse-sockaddr-port str ,sock-c socklen-ptr)
+	 (setf ,sock-c-len (mem-aref socklen-ptr :int 0))
+	 ,@body))))
+
+(defmacro with-sockaddr-c-from-string ((sostr sock-c sock-c-len) &body body)
+  "Convert sockaddr 'sock' to sockaddr_in 'sock-c' C object and run body."
+  `(with-foreign-pointer (,sock-c (+ *sockaddr-in-len* 100) socklen)
+     (with-foreign-object (socklen-ptr :int 1)
+       (setf (mem-aref socklen-ptr :int 0) socklen)
+       (with-foreign-string (str ,sostr)
+	 (cc-libevent:evutil-parse-sockaddr-port str ,sock-c socklen-ptr)
+	 (setf ,sock-c-len (mem-aref socklen-ptr :int 0))
+	 ,@body))))
 
 (defun sockaddr-from-c (ptr)
   "Create sockaddr object from c sockaddr_in"
@@ -160,8 +200,7 @@
 
     (with-foreign-slots ((sin_family sin_port sin_addr) ptr (:struct sockaddr-in))
       (setf osin_family sin_family)
-      (setf port sin_port))
-
+      (setf port (htons sin_port)))
     (let
 	((mip
 	   (if (eql osin_family *AF-INET*)

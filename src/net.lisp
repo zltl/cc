@@ -195,7 +195,7 @@ You need to (bufev-free e) when finished"
 		   :cb-args cb-args)
     (bufev-tls-connect e host port)))
 
-  (defun bufev-set-timeout (e timeout-read timeout-write)
+(defun bufev-set-timeout (e timeout-read timeout-write)
   "Set the read and write timeout for a bufferevent
 E: bufev instance
 TIMEOUT-READ: '(second microsecond)
@@ -234,16 +234,16 @@ RETURN 0 if success, -1 error"
 (defun bufev-write (e data-vec)
   "Write data string to bufev buffer."
 
-  (cffi:with-foreign-object (data (length data-vec) size)
+  (cffi:with-foreign-object (data :uint8 (length data-vec))
     (let ((i 0))
       (map nil
 	   #'(lambda (x)
 	       (setf (mem-ref data :uint8 i) x)
 	       (setf i (+ 1 i)))
-	   sequence))
+	   data-vec))
     (cc-libevent:bufferevent-write (bufev-c e)
 				   data
-				   size)))
+				   (length data-vec))))
 
 
 (defun bufev-read (e len)
@@ -288,6 +288,77 @@ RETURN 0 if success, -1 error"
 (defun buffer-length (ptr)
   "Return the total number of bytes stored in the C evbuffer"
   (cc-libevent:evbuffer-get-length ptr))
+
+
+
+(defstruct listener
+  c
+
+  base
+
+  ;; (cb listener fd sockaddr ..cb-args)
+  cb
+
+  cb-args)
+
+(defun listener-free (e)
+  "Free listener instance"
+  (cc-libevent:evconnlistener-free (listener-c e))  
+  (event-table-del (listener-c e)))
+
+(defcallback listener-event-callback :void
+    ((eptr :pointer) (fd :int) (sock-c :pointer) (socklen :int) (arg :pointer))
+
+  (let* ((e (event-table-get eptr))
+	 (cb-args (listener-cb-args e))
+	 (cb (listener-cb e)))
+    (apply cb e fd (sockaddr-from-c sock-c) cb-args)))
+
+(defun listener-new-bind (be sock &key cb cb-args)
+  "new listener"
+  (let ((e (make-listener))
+	(c (null-pointer)))
+    (with-sockaddr-c (sock sock-c sock-c-len)
+      (setf c (cc-libevent:evconnlistener-new-bind
+	       (base-c be)
+	       (callback listener-event-callback)
+	       (null-pointer)
+	       (logior cc-libevent:*LEV-OPT-CLOSE-ON-FREE*
+		       ;; cc-libevent:*LEV-OPT-THREADSAFE*
+		       cc-libevent:*LEV-OPT-REUSEABLE*
+		       cc-libevent:*LEV-OPT-REUSEABLE-PORT*)
+               -1
+	       sock-c
+	       sock-c-len)))
+    (setf (listener-c e) c)
+    (setf (listener-base e) be)
+    (setf (listener-cb e) cb)
+    (setf (listener-cb-args e) cb-args)
+    (event-table-set c e)
+    e))
+
+(defun listener-new (be hostport &key cb cb-args)
+  "New listener"
+  (let ((e (make-listener))
+	(c (null-pointer)))
+    (with-sockaddr-c-from-string (hostport sock-c sock-c-len)
+      (setf c (cc-libevent:evconnlistener-new-bind
+	       (base-c be)
+	       (callback listener-event-callback)
+	       (null-pointer)
+	       (logior cc-libevent:*LEV-OPT-CLOSE-ON-FREE*
+		       ;; cc-libevent:*LEV-OPT-THREADSAFE*
+		       cc-libevent:*LEV-OPT-REUSEABLE*
+		       cc-libevent:*LEV-OPT-REUSEABLE-PORT*)
+               -1
+	       sock-c
+	       sock-c-len)))
+    (setf (listener-c e) c)
+    (setf (listener-base e) be)
+    (setf (listener-cb e) cb)
+    (setf (listener-cb-args e) cb-args)
+    (event-table-set c e)
+    e))
 
 
 

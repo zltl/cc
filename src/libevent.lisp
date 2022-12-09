@@ -1710,3 +1710,51 @@
 (defcfun (bufferevent-get-openssl-error "bufferevent_get_openssl_error") :long
   (bev :pointer))
 
+
+
+
+
+(defconstant *LEV-OPT-LEAVE-SOCKET-BLOCKING* (ash 1 0))
+(defconstant *LEV-OPT-CLOSE-ON-FREE* (ash 1 1))
+(defconstant *LEV-OPT-CLOSE-ON-EXEC* (ash 1 2))
+(defconstant *LEV-OPT-REUSEABLE* (ash 1 3))
+(defconstant *LEV-OPT-THREADSAFE* (ash 1 4))
+(defconstant *LEV-OPT-DISABLED* (ash 1 5))
+(defconstant *LEV-OPT-DEFERRED-ACCEPT* (ash 1 6))
+(defconstant *LEV-OPT-REUSEABLE-PORT* (ash 1 7))
+(defconstant *LEV-OPT-BIND-IPV6ONLY* (ash 1 8))
+
+(defcfun (evconnlistener-new-bind "evconnlistener_new_bind") :pointer
+  (base :pointer)
+  (cb :pointer)
+  (ptr :pointer)
+  (flags :uint)
+  (backlog :int)
+  (sa :pointer)
+  (socklen :int))
+
+(defcfun (evconnlistener-new "evconnlistener_new") :pointer
+  (base :pointer)
+  (cb :pointer)
+  (ptr :pointer)
+  (flags :uint)
+  (backlog :int)
+  (fd :int))
+
+(defcfun (evconnlistener-free "evconnlistener_free") :void
+  (lev :pointer))
+
+(defcfun (evconnlistener-enable "evconnlistener_enable") :int
+  (lev :pointer))
+
+(defcfun (evconnlistener-disable "evconnlistener_disable") :int
+  (lev :pointer))
+
+(defcfun (evconnlistener-set-cb "evconnlistener_set_cb") :void
+  (lev :pointer)
+  (cb :pointer)
+  (arg :pointer))
+
+(defcfun (evconnlistener-set-error-cb "evconnlistener_set_error_cb") :void
+  (lev :pointer)
+  (errorcb :pointer))

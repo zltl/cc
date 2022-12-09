@@ -243,6 +243,76 @@ Host: quant67.com
     )
   1)
 
+
+(defun tcp-listen-test (n)
+  "test cc-event tcp task"
+
+  (defconstant PORT 8888)
+  
+  (cc-event:with-base-loop (eb)
+    ;; listen
+    (let ((sockstr (concatenate 'string
+				"0.0.0.0:"
+				(write-to-string PORT))))
+      (cc-net:listener-new
+       eb sockstr
+       :cb
+       (lambda (lev fd sock)
+	 (log:info "listener -cb ---")
+	 (let ((econ nil))
+	   (setf econ (cc-net:bufev-socket-new
+		       eb fd cc-net:*BEV-OPT-CLOSE-ON-FREE*))
+	   (cc-net:bufev-setcb
+	    econ
+	    :read-cb
+	    (lambda (e)
+	      (log:info "s/read-cb")
+	      (let* ((x (cc-net:bufev-read e 10000)))
+		(log:info "s/echoing: ~a" (cc-net:buffer-vec-to-string x))
+		(cc-net:bufev-write e x)))
+	    :write-cb
+	    (lambda (e)
+	      (log:info "s/write-cb"))
+	    :event-cb
+	    (lambda (e what)
+	      (log:info "s/event-cb what=~a" what)
+	      (if (/= 0 (logand what cc-net:*BEV-EVENT-EOF*))
+		  (progn
+		    (log:info "s/close...")
+		    (cc-net:bufev-free e)
+		    ;; free listener
+		    (log:info "s/free lev")
+		    (cc-net:listener-free lev)
+		    (log:info "s/stop loop")
+		    (cc-event:base-loop-stop eb)))))
+
+	   (cc-net:bufev-enable econ (logior cc-net:*EV-READ*
+					     cc-net:*EV-WRITE*)))))
+      ;; client connect
+      (cc-event:defer-submit eb
+	  (lambda ()
+	    (cc-net:bufev-with-tcp-connect
+	     eb :host "127.0.0.1" :port PORT
+		:read-cb
+		(lambda (e)
+		  (log:info "c/reac-cb")
+		  (let ((x (cc-net:bufev-read e 10000)))
+		    (log:info "c/read ~a  ~&c/closing..." (cc-net:buffer-vec-to-string x)))
+		  (cc-net:bufev-free e))
+
+		:write-cb
+		(lambda (e)
+		  (log:info "c/write-cb"))
+
+		:event-cb
+		(lambda (e what)
+		  (log:info "c/event-cb ~X" what)
+		  (cc-net:bufev-write-string e "hello")		  
+		  (cc-net:bufev-enable e
+				       (logior cc-net:*EV-WRITE*
+					       cc-net:*EV-READ*))))))))
+  1)
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))
@@ -250,5 +320,6 @@ Host: quant67.com
       (is (= 1 (resolve-test "quant67.com")))
       (is (= 1 (with-loop-test)))
       (is (= 1 (tcp-connect-test 1)))
-      (is (= 1 (tls-connect-test))))
+      (is (= 1 (tls-connect-test)))
+      (is (= 1  (tcp-listen-test 1))))
 

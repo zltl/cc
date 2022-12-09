@@ -179,7 +179,7 @@ TIMEOUT: '(second, microsecond) the time to wait for the event"
 ;; struct holding defer task fn and arg
 (defstruct defer-task
   ;; function
-  ;; form (cb-name cb-arg1 cb-arg2 cb-arg2)
+  ;; form (cb cb-arg1 cb-arg2 cb-arg2)
   cb
   ;; argument list
   cb-args)

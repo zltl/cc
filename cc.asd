@@ -36,6 +36,7 @@
 				     (:file "conf")
 				     (:file "util")
 				     (:file "error")
+				     (:file "errno")
 				     (:file "event")
 				     (:file "dns")
 				     (:file "ip")

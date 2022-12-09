@@ -16,6 +16,25 @@
 (defpackage :cc-libevent
   (:use :cl :common-lisp :cffi)
   (:export
+
+   :*LEV-OPT-LEAVE-SOCKET-BLOCKING* 
+   :*LEV-OPT-CLOSE-ON-FREE* 
+   :*LEV-OPT-CLOSE-ON-EXEC* 
+   :*LEV-OPT-REUSEABLE* 
+   :*LEV-OPT-THREADSAFE* 
+   :*LEV-OPT-DISABLED* 
+   :*LEV-OPT-DEFERRED-ACCEPT*
+   :*LEV-OPT-REUSEABLE-PORT*
+   :*LEV-OPT-BIND-IPV6ONL*
+
+   :evconnlistener-new-bind
+   :evconnlistener-new
+   :evconnlistener-free
+   :evconnlistener-enable
+   :evconnlistener-disable
+   :evconnlistener-set-cb
+   :evconnlistener-set-error-cb
+   
    :event-enable-debug-mode
    :event-debug-unassign
    :event-base-new
@@ -556,11 +575,14 @@
    :ipv6-address-p
    :ip-address-p
    :ip-equal
+   :with-sockaddr-c
+   :*sock-addr-len*
 
    :sockaddr
    :sockaddr-ip
    :sockaddr-port
    :sockaddr-from-c
+   :sockaddr-to-string
 
    :dns-lookup
 
@@ -602,6 +624,7 @@
    :bufev-set-timeout
    :bufev-get-input
    :bufev-get-output
+
    
    :buffer-new
    :buffer-free
@@ -613,5 +636,15 @@
    :buffer-remove
    :buffer-copyout
    :buffer-vec-to-string
-   :buffer-string-to-vec))
+   :buffer-string-to-vec
+
+   :listener
+   :listener-c
+   :listener-base
+   :listener-cb
+   :listener-cb-args
+   :listener-free
+   :listener-new
+   :listener-new-bind
+   ))
 
