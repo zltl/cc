@@ -475,7 +475,13 @@
    :bufferevent-openssl-set-allow-dirty-shutdown
    :bufferevent_openssl_get_ssl
    :bufferevent-ssl-renegotiate
-   :bufferevent-get-openssl-error))
+   :bufferevent-get-openssl-error
+
+   :evws-new-session
+   :evws-send
+   :evws-close
+   :evws-connection-set-closecb
+   :evws-connection-free))
 
 (defpackage :cc-timeval
   (:use :cl :common-lisp :cffi)
@@ -752,6 +758,7 @@
    :http-conn-set-closecb
 
    :make-keyvals
+   :keyvals-field
    :keyvals-get
    :keyvals-gets
    :keyvals-set
@@ -776,7 +783,9 @@
    :request-get-input-headers
    :request-get-ouput-headers
    :request-set-input-headers
-   :request-set-ouput-headers
+   :request-set-output-headers
+   :request-input-headers
+   :request-output-headers
 
    :server-new
    :server-set-error-cb
@@ -797,5 +806,11 @@
    :request-reply-start
    :request-reply-chunk
    :request-reply-end
+
+   :ws
+   :ws-new
+   :ws-send
+   :ws-close
+   :ws-free
    ))
 

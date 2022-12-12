@@ -1789,3 +1789,25 @@
 (defcfun (evconnlistener-set-error-cb "evconnlistener_set_error_cb") :void
   (lev :pointer)
   (errorcb :pointer))
+
+
+(defcfun (evws-new-session "evws_new_session") :pointer
+  (req :pointer)
+  (cb :pointer)
+  (arg :pointer)
+  (options :int))
+
+(defcfun (evws-send "evws_send") :void
+  (evws :pointer)
+  (packet_str :pointer)
+  (str_len :size))
+(defcfun (evws-close "evws_close") :void
+  (evws :pointer)
+  (reason :uint16))
+(defcfun (evws-connection-set-closecb "evws_connection_set_closecb") :void
+  (evws :pointer)
+  (cb :pointer)
+  (arg :pointer))
+(defcfun (evws-connection-free "evws_connection_free") :void
+  (evws :pointer))
+

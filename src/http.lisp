@@ -386,6 +386,11 @@ function."
     (cc-libevent:evhttp-clear-headers h)
     (evkeyvalq-from-hash-table h kvs)))
 
+(setf (fdefinition 'request-input-headers) #'request-get-input-headers)
+(defsetf request-input-headers request-set-input-headers)
+(setf (fdefinition 'requeset-output-headers) #'request-get-output-headers)
+(defsetf request-output-headers request-set-output-headers)
+
 (defun request-get-input-buffer (req)
   "Return the input buffer."
   (cc-libevent:evhttp-request-get-input-buffer (request-c req)))
@@ -403,7 +408,7 @@ function."
 (defun header-del (h key)
   "Removes a header from a list of existing headers."
   (with-foreign-string (k-c key)
-    (cc-libevent:evhttp-remove-header h k-c)))
+		       (cc-libevent:evhttp-remove-header h k-c)))
 (defun header-add (h key value)
   "Adds a header to a list of existing headers."
   (with-foreign-strings ((key-c key) (value-c value))
@@ -462,6 +467,9 @@ function."
   (let ((old-v (gethash key kvs)))
     (push value old-v)
     (setf (gethash key kvs) old-v)))
+
+(setf (fdefinition 'keyvals-field) #'keyvals-gets)
+(defsetf keyvals-field keyvals-sets)
 
 (defun evkeyvalq-to-hash-table (kvs-c)
   "Convert struct evkeyvalq to hash table from key to value list."
@@ -632,3 +640,61 @@ to keyvals hash-table
 (defun request-reply-end (req)
   "Complete a chunked reply."
   (cc-libevent:evhttp-send-reply-end (request-c req)))
+
+
+;; websocket
+
+(defstruct ws
+  c
+  req
+  
+  ;; (cb ws msg-vec ..cb-args)
+  cb
+  cb-args
+
+  ;; 
+  ptr-for-table
+  )
+
+(defcallback http-ws-msg-callback :void
+  ((wscon :pointer)
+   (type :int)
+   (msg :pointer)
+   (size :size)
+   (arg-c :pointer))
+
+  (let ((w (event:event-table-get wscon))
+	(vec (make-array size :initial-element 0)))
+    (loop for i from 0 below size
+	  do (setf (elt vec i) (mem-aref msg :uint8 i)))
+    (apply (ws-cb w) vec (ws--cb-args w))))
+
+(defun ws-new (req &key cb cb-args)
+  "Opens new websocket session from http request."
+  (let* ((w (make-ws :ptr-for-table (foreign-alloc :char :count 1)
+		     :req req
+		     :cb cb
+		     :cb-args cb-args))
+	 (c (cc-libevent:evws-new-session (request-c req)
+					  (callback http-ws-msg-callback)
+					  (ws-ptr-for-table w)
+					  0)))
+    (setf (ws-c w) c)))
+
+(defun ws-send (w vec)
+  "sends data over weboscket connection"
+  (with-foreign-object (out :uint8 (length vec))
+    (loop for i from 0 below (length vec)
+	  do (setf (mem-aref out :uint8 i) (elt vec i)))
+    (cc-libevent:evws-send (ws-c w) out (length vec))))
+
+(defun ws-close (w reson)
+  "Close a websocket connection with reason code"
+  (cc-libevent:evws-close (ws-c w) reason))
+
+(defun ws-free (w)
+  "Frees a websocket connection"
+  (cc-libevent:evws-connection-free (ws-c w))
+  (foreign-free (ws-ptr-for-table w)))
+
+
