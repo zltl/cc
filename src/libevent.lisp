@@ -1265,6 +1265,12 @@
 (defcfun (evhttp-set-max-headers-size "evhttp_set_max_headers_size") :void
   (http :pointer)
   (max_headers_size :ssize))
+(defcfun (evhttp-set-max-connections "evhttp_set_max_connections") :void
+  (http :pointer)
+  (cons :int))
+
+(defcfun (evhttp-get-connection-count "evhttp_get_connection_count") :int
+  (http :pointer))
 
 (defcfun (evhttp-set-max-body-size "evhttp_set_max_body_size") :void
   (http :pointer)
@@ -1321,6 +1327,12 @@
   (timeout_in_secs :int))
 
 (defcfun (evhttp-set-timeout-tv "evhttp_set_timeout_tv") :void
+  (http :pointer)
+  (tv :pointer))
+(defcfun (evhttp-set-read-timeout-tv "evhttp_set_read_timeout_tv") :void
+  (http :pointer)
+  (tv :pointer))
+(defcfun (evhttp-set-write-timeout-tv "evhttp_set_write_timeout_tv") :void
   (http :pointer)
   (tv :pointer))
 

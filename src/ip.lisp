@@ -183,13 +183,16 @@
 
 (defmacro with-sockaddr-c-from-string ((sostr sock-c sock-c-len) &body body)
   "Convert sockaddr 'sock' to sockaddr_in 'sock-c' C object and run body."
-  `(with-foreign-pointer (,sock-c (+ +sockaddr-in-len+ 100) socklen)
-     (with-foreign-object (socklen-ptr :int 1)
-       (setf (mem-aref socklen-ptr :int 0) socklen)
-       (with-foreign-string (str ,sostr)
-	 (cc-libevent:evutil-parse-sockaddr-port str ,sock-c socklen-ptr)
-	 (setf ,sock-c-len (mem-aref socklen-ptr :int 0))
-	 ,@body))))
+  (let ((str-c (gensym))
+	(socklen-c (gensym))
+	(socklen-ptr-c (gensym)))
+    `(with-foreign-pointer (,sock-c (+ +sockaddr-in-len+ 100))
+       (with-foreign-object (,socklen-ptr-c :int 1)
+	 (setf (mem-ref ,socklen-ptr-c :int) (+ +sockaddr-in-len+ 100))
+	 (with-foreign-string (,str-c ,sostr)
+	   (cc-libevent:evutil-parse-sockaddr-port ,str-c ,sock-c ,socklen-ptr-c)
+	   (setf ,sock-c-len (mem-ref ,socklen-ptr-c :int))
+	   ,@body)))))
 
 (defun sockaddr-from-c (ptr)
   "Create sockaddr object from c sockaddr_in"
@@ -214,4 +217,7 @@
 		 (ip-from-c-addr addr osin_family)))))
       (make-instance 'sockaddr :ip mip :port port))))
 
-
+(defun sockaddr-from-string (str)
+  "Convert 127.0.0.1:1234 to sockaddr"
+  (with-sockaddr-c-from-string (str -sock-c -sock-c-len)
+    (sockaddr-from-c -sock-c)))

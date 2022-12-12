@@ -233,12 +233,17 @@ TIMEOUT: '(second, miscrosecond)"
   
   ;;
   ptr-for-table
+
+  ;; server only
+  s
   )
 
 (defcallback http-request-callback :void
     ((reqptr :pointer)
      (arg :pointer))
+  (log:info "KASLKDJALKSFHJKASDALK:DJ")
   (let ((req (cc-event:event-table-get arg)))
+    (log:info "reeqkjlakj cb .................")
     (apply (request-cb req) req (request-cb-args req))))
 (defcallback http-request-chunk-callback :void
     ((reqptr :pointer)
@@ -488,3 +493,142 @@ to keyvals hash-table
     (with-foreign-object (kvs-c (:struct evkeyval))
       (cc-libevent:evhttp-parse-query-str str-c kvs-c)
       (evkeyvalq-to-hash-table kvs-c))))
+
+
+(defstruct server
+  c
+  base
+
+  ;; (cb req ...args)
+  cb
+  cb-args
+  
+  ;; (error-cb req buffer errcode reason ..err-cb-args)
+  error-cb
+  error-cb-args  
+  )
+
+;; :TODO: http mux
+(defcallback http-server-callback :void
+    ((req-c :pointer) (args :pointer))
+  (let* ((s (event:event-table-get args))
+	 (req (make-request :c req-c :s s)))
+    (apply (server-cb s)
+	   req
+	   (server-cb-args s))))
+
+(defcallback http-server-error-callback :void
+    ((req :pointer)
+     (buffer :pointer)
+     (errorno :int)
+     (reason :string)
+     (cbarg :pointer))
+  (let ((s (event:event-table-get args))
+	(req (make-request :c req-c
+			   :s s)))
+    (and (server-error-cb s)
+	 (apply (server-error-cb s)
+		req
+		buffer
+		reason
+		(server-error-cb-args s)))))
+
+(defun server-new (eb)
+  "Create a new http server."
+  (let* ((c (cc-libevent:evhttp-new (cc-event:base-c eb)))
+	 (s (make-server :c c :base eb)))
+    (event:event-table-set (server-c s) s)
+    (cc-libevent:evhttp-set-gencb c
+				(callback http-server-callback)
+				c)  
+    s))
+
+(defun server-set-cb (s &key cb cb-args)
+  "set callback of http server."
+  (setf (server-cb s) cb)
+  (setf (server-cb-args s) cb-args))
+
+(defun server-set-error-cb (s &key cb cb-args)
+  (setf (server-error-cb s) cb)
+  (setf (server-error-cb-args s) cb-args))
+
+(defun server-free (s)
+  "Free the created HTTP server."
+  (cc-libevent:evhttp-free (server-c s))
+  (event:event-table-del (server-c s)))
+
+(defun server-bind (s sock)
+  "Binds an http server on the specified sockaddr."
+  (let ((addr-str (net:ip-to-string (net:sockaddr-ip sock)))
+	(port (net:sockaddr-port sock)))
+    (with-foreign-string (addr-c addr-str)
+      (cc-libevent:evhttp-bind-socket (server-c s)
+				      addr-c
+				      port))))
+
+(defun server-bind-listener (s ls)
+  "Bind an http server on listener"
+  (cc-libevent:evhttp-bind-listener (server-c c)
+				    (net:listener-c ls)))
+
+
+(defun server-set-max-headers-size (s size)
+  (cc-libevent:evhttp-set-max-headers-size (server-c s) size))
+(defun server-set-max-body-size (s size)
+  (cc-libevent:evhttp-set-max-body-size (server-c s) size))
+(defun server-set-max-connections (s num)
+  (cc-libevent:evhttp-set-max-connections (server-c size)))
+(defun server-get-connection-count (s)
+  "Get the current number of connections."
+  (cc-libevent:evhttp-get-connection-count (server-c s)))
+(defun server-set-default-content-type (s content-type)
+  "Set the value to use for the Content-Type header when one was
+  provided."
+  (with-foreign-string (ct content-type)
+    (cc-libevent:evhttp-set-default-content-type
+     (server-c s)
+     (foreign-funcall "strdup"
+		      (:pointer)
+		      ct
+		      :pointer))))
+
+(defun server-set-allowed-methods (s methods)
+  "defaults get,post,head,put,delete"
+  (cc-libevent:evhttp-set-allowed-methods (server-c s)
+					  methods))
+
+(defun server-set-timeout (s timeout)
+  "Request timeout for server."
+  (cc-timeval:with-c-timeval-values (tv timeout)
+      (cc-libevent:evhttp-set-timeout-tv (server-c s) tv)))
+
+(defun server-set-read-timeout (s timeout)
+  "Request timeout for server."
+  (cc-timeval:with-c-timeval-values (tv timeout)
+      (cc-libevent:evhttp-set-read-timeout-tv (server-c s) tv)))
+
+(defun server-set-write-timeout (s timeout)
+  "Request timeout for server."
+  (cc-timeval:with-c-timeval-values (tv timeout)
+      (cc-libevent:evhttp-set-write-timeout-tv (server-c s) tv)))
+
+(defun request-reply (req code databuffer)
+  "Send and reply to client"
+  (cc-libevent:evhttp-send-reply (request-c req)
+				 code
+				 (null-pointer)
+				 databuffer))
+
+(defun request-reply-start (req code)
+  "Initiate a reply that uses Transfer-Encoding chunked"
+  (cc-libevent:evhttp-send-reply-start (request-c req)
+				       code
+				       (null-pointer)))
+
+(defun request-reply-chunk (req databuffer)
+  "Send data chunk as part of an ongoing chunked reply."
+  (cc-libevent:evhttp-send-reply-chunk (request-c req)
+				       databuffer))
+(defun request-reply-end (req)
+  "Complete a chunked reply."
+  (cc-libevent:evhttp-send-reply-end (request-c req)))

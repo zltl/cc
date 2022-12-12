@@ -331,7 +331,44 @@ Host: quant67.com
 
       (cc-http:request-do hcon r http:+get+)))
   1)
-(http-client-test)
+
+(defun http-server-test ()
+  (cc-event:with-base-loop (eb)
+    (let ((s (http:server-new eb)))
+      (http:server-bind s
+			(cc-net:sockaddr-from-string "0.0.0.0:8899"))
+      (http:server-set-default-content-type s "text/html")
+      (http:server-set-cb s
+			  :cb
+			  (lambda (req)
+			    (log:info "requesting...")
+			    (let ((buf (net:buffer-new)))
+			      (net:buffer-add-string buf "OK HTTP SERVER")
+			      (http:request-reply req
+						  http:+ok+
+						  buf)
+			      (net:buffer-free buf)
+			      (log:info "response..."))))
+
+      (event:defer-submit
+	  eb
+	  (lambda ()
+	    (let ((hcon (cc-http:http-conn-new eb "http://localhost:8899"))
+		  (r nil))
+
+	      (log:info "before new")
+	      (setf r (cc-http:request-new
+		       :cb
+		       (lambda (req)
+			 (log:info "request done: ~a"
+				   (http:request-get-response-code req))
+			 
+			 (http:request-free r)
+			 (http:server-free s)
+			 (cc-event:base-loop-stop eb))))
+	      (log:info "after new")
+	      (cc-http:request-do hcon r http:+get+))))))
+  1)
 
 (test event
       (is (= 1 (base-create-init)))
@@ -342,5 +379,6 @@ Host: quant67.com
       (is (= 1 (tcp-connect-test 1)))
       (is (= 1 (tls-connect-test)))
       (is (= 1 (tcp-listen-test 1)))
-      (is (= 1 (http-client-test))))
+      (is (= 1 (http-client-test)))
+      (is (= 1 (http-server-test))))
 

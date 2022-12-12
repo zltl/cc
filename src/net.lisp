@@ -266,12 +266,12 @@ RETURN 0 if success, -1 error"
   (cc-libevent:evbuffer-new))
 (defun buffer-free (ptr)
   "Deallocate storage for a C evbuffer"
-  (cc-libevent:evbuffer-free (ptr)))
+  (cc-libevent:evbuffer-free ptr))
 
 (defun buffer-add-string (ptr str)
   "Append str to end of an C evbuffer"
   (cffi:with-foreign-string ((data datalen) str)
-    (cc-libevent:evbuffer-add ptr data datalen)))
+    (cc-libevent:evbuffer-add ptr data (- datalen 1))))
 
 (defun buffer-add (ptr sequance)
   "Append byte sequance to end of an C evbuffer."

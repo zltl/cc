@@ -350,6 +350,8 @@
    :evhttp-free
    :evhttp-set-max-headers-size
    :evhttp-set-max-body-size
+   :evhttp-set-max-connections
+   :evhttp-get-connection-count
    :evhttp-set-default-content-type
    :evhttp-set-allowed-methods
    :evhttp-set-cb
@@ -362,6 +364,8 @@
    :evhttp-remove-server-alias
    :evhttp-set-timeout
    :evhttp-set-timeout-tv
+   :evhttp-set-read-timeout-tv
+   :evhttp-set-write-timeout-tv
    :+EVHTTP-SERVER-LINGERING-CLOSE+
    :evhttp-set-flags
    :evhttp-send-error
@@ -598,6 +602,7 @@
    :sockaddr-port
    :sockaddr-from-c
    :sockaddr-to-string
+   :sockaddr-from-string
 
    :dns-lookup
 
@@ -772,6 +777,25 @@
    :request-get-ouput-headers
    :request-set-input-headers
    :request-set-ouput-headers
-   
+
+   :server-new
+   :server-set-error-cb
+   :server-free
+   :server-bind
+   :server-bind-listener
+   :server-set-cb
+   :server-set-max-header-size
+   :server-set-max-body-size
+   :server-set-max-connections
+   :server-get-connection-count
+   :server-set-default-content-type
+   :server-set-allowed-methods
+   :server-set-timeout
+   :server-set-read-timeout
+   :server-set-write-timeout
+   :request-reply
+   :request-reply-start
+   :request-reply-chunk
+   :request-reply-end
    ))
 
