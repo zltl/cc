@@ -204,11 +204,11 @@ E: bufev instance
 TIMEOUT-READ: '(second microsecond)
 TIMEOUT-READ: '(second microsecond)
 "
-  (cc-timeval:with-c-timeval-values tv-read timeout-read
-    (cc-timeval:with-c-timeval-values tv-write timeout-write
-      (cc-libevent:bufferevent-set-timeouts (bufev-c e)
-					    tv-read
-					    tv-write))))
+  (cc-timeval:with-c-timeval-values (tv-read timeout-read)
+      (cc-timeval:with-c-timeval-values (tv-write timeout-write)
+	  (cc-libevent:bufferevent-set-timeouts (bufev-c e)
+						tv-read
+						tv-write))))
 
 (defun bufev-get-input (e)
   "Return the input buffer."

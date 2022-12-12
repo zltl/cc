@@ -163,7 +163,7 @@ TIMEOUT: '(second, microsecond) the time to wait for the event"
       (lambda ()
 	(and (event-c ev)
 	     (let ((eb (event-base ev)))
-	       (cc-timeval:with-c-timeval-values tv timeout
+	       (cc-timeval:with-c-timeval-values (tv timeout)
 		 (cc-libevent:event-add (event-c ev) tv)))))))
 
 (defun event-del (event)

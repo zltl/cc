@@ -322,6 +322,7 @@ Host: quant67.com
     (let ((hcon (cc-http:http-conn-new eb "http://quant67.com:80"))
 	  (r nil))
       (setf r (cc-http:request-new
+	       :cb
 	       (lambda (req)
 		 (log:info "request done: ~a"
 			   (http:request-get-response-code req))

@@ -17,6 +17,8 @@
   (:use :cl :common-lisp :cffi)
   (:export
 
+   :strlen-ptr
+   
    :+LEV-OPT-LEAVE-SOCKET-BLOCKING+ 
    :+LEV-OPT-CLOSE-ON-FREE+ 
    :+LEV-OPT-CLOSE-ON-EXEC+ 
@@ -394,7 +396,7 @@
    :+EVHTTP-CON-PUBLIC-FLAGS-END
    :evhttp-connection-set-flags
    :evhttp-request-own
-   :evhttp-request-is-own
+   :evhttp-request-is-owned
    :evhttp-request-get-connection
    :evhttp-connection-get-base
    :evhttp-connection-set-max-headers-size
@@ -433,6 +435,12 @@
    :evhttp-parse-query
    :evhttp-parse-query-str
    :evhttp-htmlescape
+
+   :evhttp-connection-set-connect-timeout-tv
+   :evhttp-connection-set-read-timeout-tv
+   :evhttp-connection-set-write-timeout-tv
+   :evhttp-connection-set-initial-retry-tv
+   
    :evhttp-uri-new
    :evhttp-uri-set-flags
    :evhttp-uri-get-scheme
@@ -729,6 +737,23 @@
 
    :http-conn-new
    :http-conn-free
+   :http-conn-set-max-header-size
+   :http-conn-set-max-body-size
+   :http-conn-set-connect-timeout
+   :http-conn-set-read-timeout
+   :http-conn-set-write-timeout
+   :http-conn-set-initial-retry-timeout
+   :http-conn-set-retries
+   :http-conn-set-closecb
+
+   :make-keyvals
+   :keyvals-get
+   :keyvals-gets
+   :keyvals-set
+   :keyvals-sets
+   :keyvals-add
+   :evkeyvalq-to-hash-table
+   :evkeyvalq-from-hash-table
 
    :request
    :request-c
@@ -738,5 +763,15 @@
    :request-free
    :request-do
    :request-get-response-code
+   :request-set-chunk-cb
+   :request-set-header-cb
+   :request-set-error-cb
+   :request-set-complete-cb
+
+   :request-get-input-headers
+   :request-get-ouput-headers
+   :request-set-input-headers
+   :request-set-ouput-headers
+   
    ))
 

@@ -16,7 +16,7 @@
   (tp :pointer)
   (tzp :pointer))
 
-(defmacro with-c-timeval-value (tv sec micro &body body)
+(defmacro with-c-timeval-value ((tv (sec micro)) &body body)
   "Create timeval object tv, then set sec, micro to tv, call body."
   `(with-foreign-object (,tv '(:struct timeval))
      (if (not 'micro) (setf micro 0))
@@ -24,10 +24,10 @@
      (setf (foreign-slot-value ,tv '(:struct timeval) 'tv-usec) ,micro)
      ,@body))
 
-(defmacro with-c-timeval-values (tv timeout &body body)
+(defmacro with-c-timeval-values ((tv timeout) &body body)
   `(if ,timeout
        (cc-timeval:with-c-timeval-value
-	   ,tv (car ,timeout) (car (cdr ,timeout))
+	   (,tv ((car ,timeout) (car (cdr ,timeout))))
 	 ,@body)
        (let ((,tv (null-pointer)))
 	 ,@body)))

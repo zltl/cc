@@ -1445,7 +1445,7 @@
   (flags :int))
 
 (defcfun (evhttp-request-own "evhttp_request_own") :void (req :pointer))
-(defcfun (evhttp-request-is-own "evhttp_request_is_own") :void (req :pointer))
+(defcfun (evhttp-request-is-owned "evhttp_request_is_owned") :int (req :pointer))
 
 (defcfun (evhttp-request-get-connection "evhttp_request_get_connection")
   :pointer
@@ -1495,6 +1495,22 @@
 (defcfun (evhttp-connection-set-timeout-tv
 	  "evhttp_connection_set_timeout_tv")
   :void
+  (evcon :pointer)
+  (tv :pointer))
+
+(defcfun (evhttp-connection-set-connect-timeout-tv
+	  "evhttp_connection_set_connect_timeout_tv")
+    :void
+  (evcon :pointer)
+  (tv :pointer))
+(defcfun (evhttp-connection-set-read-timeout-tv
+	  "evhttp_connection_set_read_timeout_tv")
+    :void
+  (evcon :pointer)
+  (tv :pointer))
+(defcfun (evhttp-connection-set-write-timeout-tv
+	  "evhttp_connection_set_write_timeout_tv")
+    :void
   (evcon :pointer)
   (tv :pointer))
 
@@ -1591,15 +1607,17 @@
 (defcfun (evhttp-clear-headers "evhttp_clear_headers") :void
   (headers :pointer))
 
-(defcfun (evhttp-encode-uri "evhttp_encode_uri") :string (str :string))
+(defcfun (strlen-ptr "strlen") :size
+  (s :pointer))
+(defcfun (evhttp-encode-uri "evhttp_encode_uri") :pointer (str :string))
 
-(defcfun (evhttp-uriencode "evhttp_uriencode") :string
+(defcfun (evhttp-uriencode "evhttp_uriencode") :pointer
   (str :string)
   (size :ssize)
   (space_to_plus :int))
 
 
-(defcfun (evhttp-decode-uri "evhttp_decode_uri") :string (uri :string))
+(defcfun (evhttp-decode-uri "evhttp_decode_uri") :pointer (uri :string))
 
 (defcfun (evhttp-uridecode "evhttp_uridecode") :string
   (uri :string)
