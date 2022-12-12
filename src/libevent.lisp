@@ -1559,7 +1559,7 @@
   (req :pointer))
 
 (defcfun (evhttp-request-get-output-headers
-	  "*evhttp_request_get_output_headers")
+	  "evhttp_request_get_output_headers")
   :pointer
   (req :pointer))
 (defcfun (evhttp-request-get-input-buffer
@@ -1584,6 +1584,7 @@
   (key :pointer))
 
 (defcfun (evhttp-add-header "evhttp_add_header") :int
+  (h :pointer)
   (key :string)
   (value :string))
 

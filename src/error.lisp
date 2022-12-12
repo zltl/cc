@@ -18,3 +18,6 @@
   ()
   (:documentation "Error when duplicate call starting functions"))
 
+(define-condition bad-argument (cc-error)
+  ()
+  (:documentation "Error processing arguments"))

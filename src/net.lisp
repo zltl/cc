@@ -162,10 +162,10 @@ Recognized HOSTNAME formats are:
 
 (setf (fdefinition 'bufev-tls-connect) #'bufev-tcp-connect)
 
-(defun bufev-with-tcp-connect (eb
-			   &key host port
-			     read-cb write-cb event-cb
-			     cb-args)
+(defun bufev-tcp-connect-with-cb (eb
+				  &key host port
+				    read-cb write-cb event-cb
+				    cb-args)
   "Connect to host:port with callbacks.
 read-cb: (read-cb e ...cb-args)
 write-cb: (write-cb e ...cb-args)
@@ -179,18 +179,21 @@ You need to (bufev-free e) when finished"
     ;; (bufev-enable e (logior *EV-READ* *EV-WRITE*))
     (bufev-tcp-connect e host port)))
 
-(defun bufev-with-tls-connect (eb
-			   &key host port
-			     read-cb write-cb event-cb
-			     cb-args)
+(defun bufev-tls-connect-with-cb (eb
+				  &key
+				    host
+				    port
+				    read-cb
+				    write-cb
+				    event-cb
+				    cb-args)
   "Connect to host:port with callbacks.
 read-cb: (read-cb e ...cb-args)
 write-cb: (write-cb e ...cb-args)
 event-cb: (event-cb e what ..cb-args)
 
 You need to (bufev-free e) when finished"
-  (let ((e (bufev-tls-socket-new eb -1 (logior +BEV-OPT-CLOSE-ON-FREE+
-					       +BEV-OPT-THREADSAFE+))))
+  (let ((e (bufev-tls-socket-new eb -1 (logior +BEV-OPT-CLOSE-ON-FREE+))))
     (bufev-setcb e :read-cb read-cb :write-cb write-cb :event-cb event-cb
 		   :cb-args cb-args)
     (bufev-tls-connect e host port)))

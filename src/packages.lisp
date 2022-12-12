@@ -513,7 +513,8 @@
    :cc-error
    :invalid-duration-string
    :oom
-   :already-start))
+   :already-start
+   :bad-argument))
 
 (defpackage :cc-event
   (:nicknames :event)
@@ -612,15 +613,17 @@
    :+BEV-OPT-DEFER-CALLBACKS+
    :+BEV-OPT-UNLOCK-CALLBACKS+
 
+   :bufev
+   :bufev-c
    :bufev-socket-new
    :bufev-tls-socket-new
    :bufev-new
    :bufev-tls-new
    :bufev-free
    :bufev-tcp-connect
-   :bufev-with-tcp-connect
+   :bufev-tcp-connect-with-cb
    :bufev-tls-connect
-   :bufev-with-tls-connect
+   :bufev-tls-connect-with-cb
    
    :bufev-setcb
    :bufev-enable
@@ -658,6 +661,82 @@
   (:nicknames :cc-http :http :net/http)
   (:use :cl :cffi :cc-event)
   (:export
+
+   :+continue+ 
+   :+switch-protocols+ 
+   :+processing+ 
+   :+earlyhints+ 
+   :+ok+ 
+   :+created+ 
+   :+accepted+ 
+   :+nonauthoritative+ 
+   :+nocontent+ 
+   :+moveperm+ 
+   :+movetemp+
+   :+notmodified+ 
+   :+badrequest+ 
+   :+unauthorized+ 
+   :+paymentrequired+ 
+   :+forbidden+ 
+   :+notfound+ 
+   :+badmethod+ 
+   :+entitytoolarge+ 
+   :+expectationfailed+ 
+   :+internal+ 
+   :+notimplemented+ 
+   :+badgateway+ 
+   :+servunavail+ 
+
+;;; requests
+
+   :+get+ 
+   :+post+ 
+   :+head+ 
+   :+put+ 
+   :+delete+ 
+   :+options+ 
+   :+trace+ 
+   :+connect+ 
+   :+patch+ 
+   :+propfind+ 
+   :+proppatch+ 
+   :+mkcol+ 
+   :+lock+ 
+   :+unlock+ 
+   :+copy+ 
+   :+move+ 
+
+   :+request+ 
+   :+response+ 
+
+   :+timeout+ 
+   :+eof+ 
+   :+invalid-header+ 
+   :+buffer-error+ 
+   :+request-cancel+ 
+   :+data-too-long+ 
+
+
    
+   :http-conn
+   :http-conn-c
+   :http-conn-base
+   :http-conn-url
+   :http-conn-cheme
+   :http-conn-host
+   :http-conn-port
+   :http-conn-uri 
+
+   :http-conn-new
+   :http-conn-free
+
+   :request
+   :request-c
+   :request-cb
+   :request-cb-args
+   :request-new
+   :request-free
+   :request-do
+   :request-get-response-code
    ))
 

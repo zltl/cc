@@ -170,7 +170,7 @@
   "test cc-event tcp task"
 
   (cc-event:with-base-loop (eb)
-    (cc-net:bufev-with-tcp-connect
+    (cc-net:bufev-tcp-connect-with-cb
      eb :host "quant67.com" :port 80
      :read-cb 
        (lambda (e)
@@ -212,7 +212,7 @@ Host: quant67.com
   "test cc-event tcp task"
 
   (cc-event:with-base-loop (eb)
-    (cc-net:bufev-with-tls-connect
+    (cc-net:bufev-tls-connect-with-cb
      eb :host "quant67.com" :port 443
      :read-cb 
        (lambda (e)
@@ -292,7 +292,7 @@ Host: quant67.com
       ;; client connect
       (cc-event:defer-submit eb
 	  (lambda ()
-	    (cc-net:bufev-with-tcp-connect
+	    (cc-net:bufev-tcp-connect-with-cb
 	     eb :host "127.0.0.1" :port PORT
 		:read-cb
 		(lambda (e)
@@ -314,6 +314,24 @@ Host: quant67.com
 					       cc-net:+EV-READ+))))))))
   1)
 
+
+(defun http-client-test ()
+  "test cc-event http task"
+
+  (cc-event:with-base-loop (eb)
+    (let ((hcon (cc-http:http-conn-new eb "http://quant67.com:80"))
+	  (r nil))
+      (setf r (cc-http:request-new
+	       (lambda (req)
+		 (log:info "request done: ~a"
+			   (http:request-get-response-code req))
+		 (http:request-free r)
+		 (cc-event:base-loop-stop eb))))
+
+      (cc-http:request-do hcon r http:+get+)))
+  1)
+(http-client-test)
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))
@@ -322,5 +340,6 @@ Host: quant67.com
       (is (= 1 (with-loop-test)))
       (is (= 1 (tcp-connect-test 1)))
       (is (= 1 (tls-connect-test)))
-      (is (= 1  (tcp-listen-test 1))))
+      (is (= 1 (tcp-listen-test 1)))
+      (is (= 1 (http-client-test))))
 
