@@ -532,7 +532,8 @@
    :invalid-duration-string
    :oom
    :already-start
-   :bad-argument))
+   :bad-argument
+   :conflict))
 
 (defpackage :cc-event
   (:nicknames :event)
@@ -802,6 +803,7 @@
    :server-set-timeout
    :server-set-read-timeout
    :server-set-write-timeout
+   :request-reply-error
    :request-reply
    :request-reply-start
    :request-reply-chunk

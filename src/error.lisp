@@ -21,3 +21,7 @@
 (define-condition bad-argument (cc-error)
   ()
   (:documentation "Error processing arguments"))
+
+(define-condition conflict (cc-error)
+  ()
+  (:documentation "Error when conflict occur"))
