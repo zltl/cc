@@ -814,5 +814,17 @@
    :ws-send
    :ws-close
    :ws-free
+
+   :mux
+   :mux-node
+   :mux-new
+   :mux-get
+   :mux-post
+   :mux-put
+   :mux-delete
+   :mux-default
+   :mux-call
+   :mux-handler
+   :mux-serve
    ))
 

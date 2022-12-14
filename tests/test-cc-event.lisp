@@ -370,6 +370,30 @@ Host: quant67.com
 	      (cc-http:request-do hcon r http:+get+))))))
   1)
 
+
+(defun http-mux-test ()
+  (cc-event:with-base-loop (eb)
+    (let ((s (http:server-new eb))
+	  (mux (http:mux-new)))
+      ;; mux
+      (http:mux-get mux "/"
+		    (lambda (req)
+		      (log:info "/ => lllllllll")
+		      (http:request-reply-error req http:+ok+)))
+
+      ;; server
+      (http:server-bind s
+			(cc-net:sockaddr-from-string "0.0.0.0:8899"))
+      (http:server-set-default-content-type s "text/html")
+
+      (http:server-set-cb s
+			  :cb
+			  (http:mux-serve mux))
+      ))
+  1)
+
+(http-mux-test)
+
 (test event
       (is (= 1 (base-create-init)))
       (is (= 100 (defer-task-test 100)))

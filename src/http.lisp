@@ -381,9 +381,9 @@ function."
   (cc-libevent:evhttp-request-get-evhttp-uri (request-c req)))
 (defun request-get-path (req)
   "Return the path of request."
-  (let ((uri (cc-libevent:evhttp-request-get-evhttp-uri (request-c req)))
-	(path (cc-libevent:evhttp-uri-get-path uri))))
-  path)
+  (let* ((uri (cc-libevent:evhttp-request-get-evhttp-uri (request-c req)))
+	 (path (cc-libevent:evhttp-uri-get-path uri)))
+    path))
 
 (defun request-get-command (req)
   "Return the request command. +get+/+post+..."
@@ -575,8 +575,8 @@ to keyvals hash-table
 	 (s (make-server :c c :base eb)))
     (event:event-table-set (server-c s) s)
     (cc-libevent:evhttp-set-gencb c
-				(callback http-server-callback)
-				c)  
+				  (callback http-server-callback)
+				  c)  
     s))
 
 (defun server-set-cb (s &key cb cb-args)
@@ -850,7 +850,7 @@ to keyvals hash-table
 
 (defun mux-new ()
   "Create and return new mux."
-  (make-mux :fallback-handler-cb mux-default-404
+  (make-mux :fallback-handler-cb #'mux-default-404
 	    :root (make-mux-node :name "")))
 
 (defun mux-get (m pattern &optional cb-h &key cb cb-args)
@@ -869,12 +869,12 @@ to keyvals hash-table
   "Call the specific callback setted."
   (let* ((path (request-get-path req))
 	 (path-list (split-uri path))
-	 (called (mux-dfs-call m path-list req)))
-    (if (mux-dfs-call (mux-root m) path-list req)
+	 (called (mux-dfs-call (mux-root m) path-list req)))
+    (if called
 	t ;; called, just return
- 	(apply (mux-fallback-handler-cb m) (mux-fallback-handler-cb-args m)))))
+ 	(apply (mux-fallback-handler-cb m) req (mux-fallback-handler-cb-args m)))))
 
-(defun mux-handler (m)
+(defun mux-serve (m)
   "Return handler function of mux"
   (alexandria:curry #'mux-call m))
 
@@ -886,11 +886,12 @@ to keyvals hash-table
         (if cb-args
 	    (multiple-value-bind (cb arg) cb-args
 	      (apply cb req arg)
-	      t)
+	      (return-from mux-dfs-call t))
 	    (return-from mux-dfs-call nil))))
 
   (let* ((curpath (car path-list))
-	 (next-node (gethash curpath node)))
+	 (child-list (mux-node-childs node))
+	 (next-node (and child-list (gethash curpath child-list))))
     
     (if next-node
 	;; first we try searching full match	
