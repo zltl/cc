@@ -865,7 +865,15 @@ to keyvals hash-table
       (let ((s (%mux-get-cb node (request-get-command req))))
 	(if s
 	    (progn
-	      (apply (mux-cb-item-cb s) req (mux-cb-item-cb-args s))
+	      (handler-case
+		  (apply (mux-cb-item-cb s) req (mux-cb-item-cb-args s))
+		(error (c)
+		  (let ((ostr (make-array '(0) :element-type 'base-char :fill-pointer 0 :adjustable t)))
+		    (with-output-to-string (out ostr)
+		      (trivial-backtrace:print-backtrace c :output out))
+		    (log:error "~a" ostr))
+		  (request-reply-error req +internal+)))
+              
 	      (return-from mux-dfs-call t))
 	    (return-from mux-dfs-call nil))))
   

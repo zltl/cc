@@ -22,7 +22,8 @@
 	       :bt-semaphore
 	       :lparallel
 	       :for
-	       :flexi-streams)
+	       :flexi-streams
+	       :trivial-backtrace)
 
   ;; Project stucture.
   :serial t

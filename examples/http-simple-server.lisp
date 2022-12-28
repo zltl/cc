@@ -2,6 +2,7 @@
 
 (defun handle-root (req)
   (log:info "/ => return 111")
+  (error "abc")
   (http:request-reply-string req http:+ok+ "111"))
 (defun handle-foo (req)
   (log:info "/foo => return 222")
