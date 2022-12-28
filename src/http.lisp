@@ -474,7 +474,7 @@ function."
 
 (defun make-keyvals ()
   "Create a new kvs"
-  (make-hash-table))
+  (make-hash-table :test #'equalp))
 
 (defun keyvals-get (kvs key)
   "Get value by key from kvs"
@@ -503,22 +503,22 @@ function."
 (defun evkeyvalq-to-hash-table (kvs-c)
   "Convert struct evkeyvalq to hash table from key to value list."
   (let ((m (make-keyvals))
-	(next nil))
-    (setf next kvs-c)
-    (loop while (not (null-pointer-p inf))
+	(next kvs-c))
+    (loop while (not (null-pointer-p next))
 	  do
 	     (with-foreign-slots
 		 ((tqe-next
 		   key
 		   value) next (:struct evkeyval))
-	       (keyvals-add m key value)
-	       (setf next tqe-next))))
-  m)
+	       (if (not (null-pointer-p key))
+		       (keyvals-add m key value))
+	       (setf next tqe-next)))
+    m))
 (defun evkeyvalq-from-hash-table (kvs-c m)
   "Convert lisp hash table to C struct evkeyvalq."
-  (maphash #'(lambda (key value-list)
-	       (dolist (v value-list)
-		 (header-add kvs-c key v)))
+  (maphash (lambda (key value-list)
+	     (dolist (v value-list)
+	       (header-add kvs-c key v)))
 	     m))
 
 (defun parse-query (str)
@@ -576,7 +576,7 @@ to keyvals hash-table
     (event:event-table-set (server-c s) s)
     (cc-libevent:evhttp-set-gencb c
 				  (callback http-server-callback)
-				  c)  
+				  c)
     s))
 
 (defun server-set-cb (s &key cb cb-args)
@@ -661,6 +661,16 @@ to keyvals hash-table
 				 (null-pointer)
 				 databuffer))
 
+(defun request-reply-string (req code str)
+  "Send and reply string body to client."
+  (let ((buf (net:buffer-new)))
+    (net:buffer-add-string buf str)
+    (cc-libevent:evhttp-send-reply (request-c req)
+				   code
+				   (null-pointer)
+				   buf)
+    (net:buffer-free buf)))
+
 (defun request-reply-start (req code)
   "Initiate a reply that uses Transfer-Encoding chunked"
   (cc-libevent:evhttp-send-reply-start (request-c req)
@@ -741,44 +751,19 @@ to keyvals hash-table
   fallback-handler-cb
   fallback-handler-cb-args)
 
+(defstruct mux-cb-item
+  method
+  cb
+  cb-args)
+
 (defstruct mux-node
   name
   
   ;; methods mask
   methods
-  ;; (xxx-cb req ...handler-cb-args)
-  get-cb
-  get-cb-args
-  post-cb
-  post-cb-args
-  head-cb
-  head-cb-args
-  put-cb
-  put-cb-args
-  delete-cb
-  delete-cb-args
-  options-cb
-  options-cb-args
-  trace-cb
-  trace-cb-args
-  connect-cb
-  connect-cb-args
-  patch-cb
-  patch-cb-args
-  propfind-cb
-  propfind-cb-args
-  proppatch-cb
-  proppatch-cb-args
-  mkcol-cb
-  mkcol-cb-args
-  lock-cb
-  lock-cb-args
-  unlock-cb
-  unlock-cb-args
-  copy-cb
-  copy-cb-args
-  move-cb
-  move-cb-args
+
+  ;; list of mux-cb-item
+  cb-list
   
   ;; childs mux-node hashtable
   childs
@@ -789,69 +774,37 @@ to keyvals hash-table
   ;; *bar
   child-matchall-var)
 
-(defmacro %mux-check-set (node mname method cb cb-args)
-  (list 'and (list '> (list 'logand method (read-from-string (concatenate 'string "+" mname "+"))) 0)
-	(list 'setf (list (read-from-string (concatenate 'string "mux-node-" mname "-cb")) node) cb
-	      (list (read-from-string (concatenate 'string "mux-node-" mname "-cb-args")) node ) cb-args)))
-
-(defmacro %mux-check-get (node mname method)
-  (list 'and (list '> (list 'logand method (read-from-string (concatenate 'string "+" mname "+"))) 0)
-	(list 'values (list (read-from-string (concatenate 'string "mux-node-" mname "-cb")) node)
-	      (list (read-from-string (concatenate 'string "mux-node-" mname "-cb-args")) node))))
-
-(defun %mux-set-cb (node method cb cb-args)
-  "Set cbs to mux-node."
-  (%mux-check-set node "get" method cb cb-args)
-  (%mux-check-set node "post" method cb cb-args)
-  (%mux-check-set node "head" method cb cb-args)
-  (%mux-check-set node "put" method cb cb-args)
-  (%mux-check-set node "delete" method cb cb-args)
-  (%mux-check-set node "options" method cb cb-args)
-  (%mux-check-set node "trace" method cb cb-args)
-  (%mux-check-set node "connect" method cb cb-args)
-  (%mux-check-set node "patch" method cb cb-args)
-  (%mux-check-set node "propfind" method cb cb-args)
-  (%mux-check-set node "proppatch" method cb cb-args)
-  (%mux-check-set node "mkcol" method cb cb-args)
-  (%mux-check-set node "lock" method cb cb-args)
-  (%mux-check-set node "unlock" method cb cb-args)
-  (%mux-check-set node "copy" method cb cb-args)
-  (%mux-check-set node "move" method cb cb-args)
-  (setf (mux-node-methods node) method))
-
 (defun %mux-get-cb (node method)
   "Return (valus cb cb-args) of method for this node"
 
-  (or
-   (%mux-check-get node "get" method)
-   (%mux-check-get node "post" method)
-   (%mux-check-get node "head" method)
-   (%mux-check-get node "put" method)
-   (%mux-check-get node "delete" method)
-   (%mux-check-get node "options" method)
-   (%mux-check-get node "trace" method)
-   (%mux-check-get node "connect" method)
-   (%mux-check-get node "patch" method)
-   (%mux-check-get node "propfind" method)
-   (%mux-check-get node "proppatch" method)
-   (%mux-check-get node "mkcol" method)
-   (%mux-check-get node "lock" method)
-   (%mux-check-get node "unlock" method)
-   (%mux-check-get node "copy" method)
-   (%mux-check-get node "move" method)))
+  ;; for each item on cb-list, if match method, return
+  (dolist (it (mux-node-cb-list node))
+    (if (> (logand method (mux-cb-item-method it)) 0)
+	(return-from %mux-get-cb it)))
+  ;; return nil if not found any item that match method
+  nil)
 
-(defun %mux-may-call-cb (node req)
-  "Call and return t, else return nil"
-  (let ((res (%mux-get-cb node (request-get-command req))))
-    (if (res)
-	(multiple-value-bind (cb cb-arg) res
-	  (apply cb req cb-arg)
-	  t))))
+(defun %mux-set-cb (node method cb cb-args)
+  "Set handler cb to node."
+  ;; check conflict first
+  (log:info "mux set cb")
+  (if (%mux-get-cb node method)
+      (error (cc-error:conflict "cb conflict with before")))
+
+  (setf (mux-node-methods node) (logior (mux-node-methods node) method))
+  
+  ;; push new cb to list
+  (push (make-mux-cb-item :method method
+			  :cb-args cb-args
+			  :cb cb)
+	(mux-node-cb-list node)))
 
 (defun mux-new ()
   "Create and return new mux."
   (make-mux :fallback-handler-cb #'mux-default-404
-	    :root (make-mux-node :name "")))
+	    :root (make-mux-node :name ""
+				 :methods 0
+				 :childs (make-hash-table :test #'equalp))))
 
 (defun mux-get (m pattern &optional cb-h &key cb cb-args)
   (mux-handler m pattern :methods +get+ :cb (or cb cb-h) :cb-args cb-args))
@@ -878,21 +831,49 @@ to keyvals hash-table
   "Return handler function of mux"
   (alexandria:curry #'mux-call m))
 
+(defun mux-dfs-print (node path-list)
+  "dfs and print all cb nodes."
+
+  ;; null node, return
+  (if (not node)
+      (return-from mux-dfs-print))
+
+  (let ((new-path-list (append path-list (list (mux-node-name node)))))
+
+    ;; current node have callback
+    (if (and (mux-node-methods node) (> (mux-node-methods node) 0))
+	(log:info "~{~A/~} +~X+"
+		  new-path-list
+		  (mux-node-methods node)))
+
+    ;; for each childs
+    (maphash (lambda (key value)
+	       (mux-dfs-print value new-path-list))
+	     (mux-node-childs node))
+    
+    ;; for each var childs
+    (dolist (next-node (mux-node-child-vars node))
+      (mux-dfs-print next-node new-path-list))    
+
+    ;; matchall child
+    (mux-dfs-print (mux-node-child-matchall-var node) new-path-list)))
+
 (defun mux-dfs-call (node path-list req)
   "dfs find node and call."
   ;; match current node
+
   (if (not path-list)
-      (let ((cb-args (%mux-get-cb node (request-get-command req))))
-        (if cb-args
-	    (multiple-value-bind (cb arg) cb-args
-	      (apply cb req arg)
+      (let ((s (%mux-get-cb node (request-get-command req))))
+        (if s
+	    (progn
+	      (apply (mux-cb-item-cb s) req (mux-cb-item-cb-args s))
 	      (return-from mux-dfs-call t))
 	    (return-from mux-dfs-call nil))))
 
   (let* ((curpath (car path-list))
 	 (child-list (mux-node-childs node))
 	 (next-node (and child-list (gethash curpath child-list))))
-    
+
     (if next-node
 	;; first we try searching full match	
 	(mux-dfs-call next-node (cdr path-list) req)
@@ -969,11 +950,14 @@ return nil if match failed."
 	   (progn
 	     (if (cdr pattern-list)
 		 (error (error:bad-argument "variables start by a '*' must be the last part of path")))
-	     (setf (mux-node-child-matchall-var node)
-		   (make-mux-node :name cur-pattern
-				  :methods methods
-				  :handler-cb cb
-				  :handler-cb-args cb-args))))
+	     ;; new node if not matchall var exists
+	     (if (not (mux-node-child-matchall-var node))
+		 (setf (mux-node-child-matchall-var node) (make-mux-node :name cur-pattern
+									 :methods methods
+									 :childs (make-hash-table :test #'equalp))))
+	     (if (string/= mux-node-name (mux-node-child-matchall-var node))
+		 (error (error:conflict "conflict '*var' mux with previous")))
+	     (%mux-set-cb (mux-node-child-matchall-var node) methods cb cb-args)))
 
 	  ((eql firchr #\:)
 	   ;; var node :bar
@@ -982,7 +966,9 @@ return nil if match failed."
 			(if (mux-dfs-gen child (cdr pattern-list) methods cb cb-args)
 			    (return-from mux-dfs-gen t))))
 		  ;; not found, create one
-		  (let ((new-node (make-mux-node :name cur-pattern)))
+		  (let ((new-node (make-mux-node :name cur-pattern
+						 :methods 0
+						 :childs (make-hash-table :test #'equalp))))
 		    (push new-node
 			  (mux-node-child-vars node))
 		    (mux-dfs-gen child (cdr pattern-list) methods cb cb-args))))
@@ -992,9 +978,11 @@ return nil if match failed."
 	     (let ((next-node (gethash cur-pattern (mux-node-childs node))))
 	       (if (not next-node)
 		   (progn
-		     (setf next-node (make-mux-node :name cur-pattern))
+		     (setf next-node (make-mux-node :name cur-pattern
+						    :methods 0
+						    :childs (make-hash-table :test #'equalp)))
 		       (setf (gethash cur-pattern (mux-node-childs node)) next-node)))
-	       (mux-dfs-gen next-node (cdr pattern-list) methods cb -cb-args)))))))
+	       (mux-dfs-gen next-node (cdr pattern-list) methods cb cb-args)))))))
 
 (defun split-uri (pattern)
   "Split uri by '/', trim empty strings."

@@ -1591,12 +1591,12 @@
   :pointer
   (req :pointer))
 (defcfun (evhttp-request-get-input-buffer
-	  "*evhttp_request_get_input_buffer")
+	  "evhttp_request_get_input_buffer")
   :pointer
   (req :pointer))
 
 (defcfun (evhttp-request-get-output-buffer
-	  "*evhttp_request_get_output_buffer")
+	  "evhttp_request_get_output_buffer")
   :pointer
   (req :pointer))
 

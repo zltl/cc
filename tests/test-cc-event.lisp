@@ -392,7 +392,7 @@ Host: quant67.com
       ))
   1)
 
-(http-mux-test)
+;; (http-mux-test)
 
 (test event
       (is (= 1 (base-create-init)))

@@ -399,6 +399,21 @@ return the vector of removed bytes"
 	    do (setf (elt vec i) (cffi:mem-aref out :uint8 i))))
     vec))
 
+(defun buffer-copyout-string (ptr len)
+  "Read data string from an evbuffer, and leave the buffer unchanged."
+  (with-foreign-object (str-c :char (1+ len))
+    (setf (mem-aref str-c :char len) 0)
+    (cc-libevent:evbuffer-copyout ptr str-c len)
+    (foreign-string-to-lisp str-c)))
+
+(defun buffer-to-vec (ptr)
+  "Copy all data from buffer out to vector."
+  (buffer-copyout ptr (buffer-length ptr)))
+
+(defun buffer-to-string (ptr)
+  "Copy all data from buffer out to string"
+  (buffer-copyout-string ptr (buffer-length ptr)))
+
 (defun buffer-vec-to-string (vec)
   (flexi-streams:octets-to-string vec :external-format :utf-8))
 (defun buffer-string-to-vec (str)

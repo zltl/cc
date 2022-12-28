@@ -664,6 +664,9 @@
    :buffer-nth
    :buffer-remove
    :buffer-copyout
+   :buffer-copyout-string
+   :buffer-to-vec
+   :buffer-to-string
    :buffer-vec-to-string
    :buffer-string-to-vec
 
@@ -782,11 +785,13 @@
    :request-set-complete-cb
 
    :request-get-input-headers
-   :request-get-ouput-headers
+   :request-get-output-headers
    :request-set-input-headers
    :request-set-output-headers
    :request-input-headers
    :request-output-headers
+   :request-get-input-buffer
+   :request-get-output-buffer
 
    :server-new
    :server-set-error-cb
@@ -808,6 +813,7 @@
    :request-reply-start
    :request-reply-chunk
    :request-reply-end
+   :request-reply-string
 
    :ws
    :ws-new
@@ -816,6 +822,7 @@
    :ws-free
 
    :mux
+   :mux-root
    :mux-node
    :mux-new
    :mux-get
@@ -826,5 +833,7 @@
    :mux-call
    :mux-handler
    :mux-serve
+
+   :mux-dfs-print
    ))
 

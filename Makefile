@@ -1,6 +1,6 @@
 LISP ?= sbcl
 
-.PHONY: run build test clean
+.PHONY: run build test clean example
 
 all: test
 
@@ -16,6 +16,10 @@ build:
 test:
 	$(LISP) --non-interactive \
 		--load run-tests.lisp
+
+example:
+	$(LISP) --non-interactive \
+		--load run-example.lisp
 
 clean:
 	rm -rf cc
