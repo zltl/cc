@@ -115,7 +115,7 @@
 (defun http-simple-server ()
   "Entry point for the example."
   (log:info "start http-simple-server")
-  (cc-event:with-base-loop (eb)
+  (event:with-base-loop (eb)
     (let ((srv (http:server-new eb))
 	  (mux (http:mux-new)))
 
@@ -136,7 +136,7 @@
       
       ;; bind server
       (http:server-bind srv
-			(cc-net:sockaddr-from-string "0.0.0.0:8899"))
+			(net:sockaddr-from-string "0.0.0.0:8899"))
       ;; the default content type
       (http:server-set-default-content-type srv "text/html")
 
