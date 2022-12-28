@@ -325,7 +325,7 @@ TYPE: +get+/+post+/..."
   "Set param to request"
   (let ((param (request-param-map req)))
     (if (not param)
-	(progn (setf param (make-hash-table))
+	(progn (setf param (make-hash-table :test #'equalp))
 	       (setf (request-param-map req) param)))
     (setf (gethash name param) value)))
 
@@ -776,7 +776,6 @@ to keyvals hash-table
 
 (defun %mux-get-cb (node method)
   "Return (valus cb cb-args) of method for this node"
-
   ;; for each item on cb-list, if match method, return
   (dolist (it (mux-node-cb-list node))
     (if (> (logand method (mux-cb-item-method it)) 0)
@@ -864,12 +863,12 @@ to keyvals hash-table
 
   (if (not path-list)
       (let ((s (%mux-get-cb node (request-get-command req))))
-        (if s
+	(if s
 	    (progn
 	      (apply (mux-cb-item-cb s) req (mux-cb-item-cb-args s))
 	      (return-from mux-dfs-call t))
 	    (return-from mux-dfs-call nil))))
-
+  
   (let* ((curpath (car path-list))
 	 (child-list (mux-node-childs node))
 	 (next-node (and child-list (gethash curpath child-list))))
@@ -880,7 +879,7 @@ to keyvals hash-table
 	;; then else we try vars like :foo
         (progn
 	  (dolist (child (mux-node-child-vars node))
-	    (let ((child-name (subseq (mux-node-name child) 1)))
+	    (let ((child-name (mux-node-name child)))
 	      ;; set param
 	      (request-param-set req child-name curpath)
 	      (if (mux-dfs-call child (cdr path-list) req)
@@ -890,8 +889,8 @@ to keyvals hash-table
 	  ;; finally try matchall
 	  (let ((child (mux-node-child-matchall-var node)))
 	    (if child
-		(let ((child-name (subseq (mux-node-name child))))
-		  (request-param-set req child-name (format nil "/~{~A~^/~}" path-list))
+		(let ((child-name (mux-node-name child)))
+		  (request-param-set req child-name (format nil "/~{~A/~}" path-list))
 		  (mux-dfs-call child nil req))))))))
 
 (defun mux-default-404 (req)
@@ -955,7 +954,7 @@ return nil if match failed."
 		 (setf (mux-node-child-matchall-var node) (make-mux-node :name cur-pattern
 									 :methods methods
 									 :childs (make-hash-table :test #'equalp))))
-	     (if (string/= mux-node-name (mux-node-child-matchall-var node))
+	     (if (string/= cur-pattern (mux-node-name (mux-node-child-matchall-var node)))
 		 (error (error:conflict "conflict '*var' mux with previous")))
 	     (%mux-set-cb (mux-node-child-matchall-var node) methods cb cb-args)))
 
@@ -971,9 +970,9 @@ return nil if match failed."
 						 :childs (make-hash-table :test #'equalp))))
 		    (push new-node
 			  (mux-node-child-vars node))
-		    (mux-dfs-gen child (cdr pattern-list) methods cb cb-args))))
+		    (mux-dfs-gen new-node (cdr pattern-list) methods cb cb-args))))
 	  (t
-	   ;; full match 'xyz'
+	   ;; full match '*xyz'
 	   (progn
 	     (let ((next-node (gethash cur-pattern (mux-node-childs node))))
 	       (if (not next-node)

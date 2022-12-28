@@ -63,6 +63,55 @@
      http:+ok+
      instr)))
 
+(defun handle-varname3 (req)
+  (log:info "/text/:xxx/:yyy/:zzz => return 222")
+  (let ((params (list
+		 (http:request-param req ":xxx")
+		 (http:request-param req ":yyy")
+		 (http:request-param req ":zzz"))))
+    (log:info "param: ~a" params)
+    (let ((h (http:make-keyvals)))
+      (http:keyvals-add h "Content-Type" "application/json")
+      (http:request-set-output-headers req h))    
+    (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
+(defun handle-varname2 (req)
+  (log:info "/text/:xxx/:yyy => return 222")
+  (let ((params (list
+		 (http:request-param req ":xxx")
+		 (http:request-param req ":yyy"))))
+    (log:info "param: ~a" params)
+    (let ((h (http:make-keyvals)))
+      (http:keyvals-add h "Content-Type" "application/json")
+      (http:request-set-output-headers req h))    
+    (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
+(defun handle-varname1 (req)
+  (log:info "/text/:xxx => return 222")
+  (let ((params (list
+		 (http:request-param req ":xxx"))))
+    (log:info "param: ~a" params)
+    (let ((h (http:make-keyvals)))
+      (http:keyvals-add h "Content-Type" "application/json")
+      (http:request-set-output-headers req h))    
+    (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
+(defun handle-varname-jump (req)
+  (log:info "/jump/:xxx/foo => return 222")
+  (let ((params (list
+		 (http:request-param req ":xxx"))))
+    (log:info "param: ~a" params)
+    (let ((h (http:make-keyvals)))
+      (http:keyvals-add h "Content-Type" "application/json")
+      (http:request-set-output-headers req h))    
+    (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
+(defun handle-matchall (req)
+  (log:info "/mall/*rest => return 222")
+  (let ((params (list
+		 (http:request-param req "*rest"))))
+    (log:info "param: ~a" params)
+    (let ((h (http:make-keyvals)))
+      (http:keyvals-add h "Content-Type" "application/json")
+      (http:request-set-output-headers req h))    
+    (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
+
 (defun http-simple-server ()
   "Entry point for the example."
   (log:info "start http-simple-server")
@@ -76,6 +125,11 @@
       (http:mux-get mux "/html/shop" #'handle-shop)
       (http:mux-get mux "/json/bar" #'handle-json)
       (http:mux-post mux "/json/bar" #'handle-post-json)
+      (http:mux-get mux "/text/:xxx/:yyy/:zzz" #'handle-varname3)
+      (http:mux-get mux "/text/:xxx/:yyy" #'handle-varname2)
+      (http:mux-get mux "/text/:xxx" #'handle-varname1)
+      (http:mux-get mux "/jump/:xxx/foo" #'handle-varname-jump)
+      (http:mux-get mux "/mall/*rest" #'handle-matchall)
       
       ;; print
       (http:mux-dfs-print (http:mux-root mux) nil)
@@ -86,8 +140,4 @@
       ;; the default content type
       (http:server-set-default-content-type srv "text/html")
 
-      (http:server-set-cb srv
-			  :cb
-			  (http:mux-serve mux))))
-  
-  (log:info "hello from http simple server"))
+      (http:server-set-cb srv :cb (http:mux-serve mux)))))

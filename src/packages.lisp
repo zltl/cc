@@ -783,6 +783,7 @@
    :request-set-header-cb
    :request-set-error-cb
    :request-set-complete-cb
+   :request-param
 
    :request-get-input-headers
    :request-get-output-headers
