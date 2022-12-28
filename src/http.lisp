@@ -890,7 +890,7 @@ to keyvals hash-table
 	  (let ((child (mux-node-child-matchall-var node)))
 	    (if child
 		(let ((child-name (mux-node-name child)))
-		  (request-param-set req child-name (format nil "/~{~A/~}" path-list))
+		  (request-param-set req child-name (format nil "/~{~A~^/~}" path-list))
 		  (mux-dfs-call child nil req))))))))
 
 (defun mux-default-404 (req)
