@@ -67,7 +67,7 @@
   "Entry point for the example."
   (log:info "start http-simple-server")
   (cc-event:with-base-loop (eb)
-    (let ((s (http:server-new eb))
+    (let ((srv (http:server-new eb))
 	  (mux (http:mux-new)))
 
       ;; set handles to mux
@@ -81,11 +81,12 @@
       (http:mux-dfs-print (http:mux-root mux) nil)
       
       ;; bind server
-      (http:server-bind s
+      (http:server-bind srv
 			(cc-net:sockaddr-from-string "0.0.0.0:8899"))
-      (http:server-set-default-content-type s "text/html")
+      ;; the default content type
+      (http:server-set-default-content-type srv "text/html")
 
-      (http:server-set-cb s
+      (http:server-set-cb srv
 			  :cb
 			  (http:mux-serve mux))))
   
