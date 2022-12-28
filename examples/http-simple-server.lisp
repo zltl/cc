@@ -2,8 +2,10 @@
 
 (defun handle-root (req)
   (log:info "/ => return 111")
-  (error "abc")
   (http:request-reply-string req http:+ok+ "111"))
+(defun handle-error (req)
+  (log:info "/error => 500")
+  (/ 3 0))
 (defun handle-foo (req)
   (log:info "/foo => return 222")
   (http:request-reply-string req http:+ok+ "222"))
@@ -122,6 +124,7 @@
 
       ;; set handles to mux
       (http:mux-get mux "/" #'handle-root)
+      (http:mux-get mux "/error" #'handle-error)
       (http:mux-get mux "/text/foo" #'handle-foo)
       (http:mux-get mux "/html/shop" #'handle-shop)
       (http:mux-get mux "/json/bar" #'handle-json)
