@@ -69,9 +69,9 @@
 (defun handle-varname3 (req)
   (log:info "/text/:xxx/:yyy/:zzz => return 222")
   (let ((params (list
-		 (http:request-param req ":xxx")
-		 (http:request-param req ":yyy")
-		 (http:request-param req ":zzz"))))
+		 (http:request-param req "xxx")
+		 (http:request-param req "yyy")
+		 (http:request-param req "zzz"))))
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
@@ -80,8 +80,8 @@
 (defun handle-varname2 (req)
   (log:info "/text/:xxx/:yyy => return 222")
   (let ((params (list
-		 (http:request-param req ":xxx")
-		 (http:request-param req ":yyy"))))
+		 (http:request-param req "xxx")
+		 (http:request-param req "yyy"))))
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
@@ -90,7 +90,7 @@
 (defun handle-varname1 (req)
   (log:info "/text/:xxx => return 222")
   (let ((params (list
-		 (http:request-param req ":xxx"))))
+		 (http:request-param req "xxx"))))
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
@@ -99,7 +99,7 @@
 (defun handle-varname-jump (req)
   (log:info "/jump/:xxx/foo => return 222")
   (let ((params (list
-		 (http:request-param req ":xxx"))))
+		 (http:request-param req "xxx"))))
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
@@ -108,7 +108,7 @@
 (defun handle-matchall (req)
   (log:info "/mall/*rest => return 222")
   (let ((params (list
-		 (http:request-param req "*rest"))))
+		 (http:request-param req "rest"))))
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
@@ -118,6 +118,7 @@
 (defun http-simple-server ()
   "Entry point for the example."
   (log:info "start http-simple-server")
+
   (event:with-base-loop (eb)
     (let ((srv (http:server-new eb))
 	  (mux (http:mux-new)))

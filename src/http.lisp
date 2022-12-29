@@ -889,16 +889,16 @@ to keyvals hash-table
 	  (dolist (child (mux-node-child-vars node))
 	    (let ((child-name (mux-node-name child)))
 	      ;; set param
-	      (request-param-set req child-name curpath)
+	      (request-param-set req (subseq child-name 1) curpath)
 	      (if (mux-dfs-call child (cdr path-list) req)
 		  (return-from mux-dfs-call t)
 		  ;; if not found child, unset param back
-		  (request-param-del req child-name))))
+		  (request-param-del req (subseq child-name 1)))))
 	  ;; finally try matchall
 	  (let ((child (mux-node-child-matchall-var node)))
 	    (if child
 		(let ((child-name (mux-node-name child)))
-		  (request-param-set req child-name (format nil "/~{~A~^/~}" path-list))
+		  (request-param-set req (subseq child-name 1) (format nil "/~{~A~^/~}" path-list))
 		  (mux-dfs-call child nil req))))))))
 
 (defun mux-default-404 (req)
@@ -968,7 +968,7 @@ return nil if match failed."
 
 	  ((eql firchr #\:)
 	   ;; var node :bar
-           (progn (dolist (child (mux-node-child-vars node))
+	   (progn (dolist (child (mux-node-child-vars node))
 		    (if (string= cur-pattern (mux-node-name child))
 			(if (mux-dfs-gen child (cdr pattern-list) methods cb cb-args)
 			    (return-from mux-dfs-gen t))))
@@ -980,7 +980,7 @@ return nil if match failed."
 			  (mux-node-child-vars node))
 		    (mux-dfs-gen new-node (cdr pattern-list) methods cb cb-args))))
 	  (t
-	   ;; full match '*xyz'
+	   ;; full match 'xyz'
 	   (progn
 	     (let ((next-node (gethash cur-pattern (mux-node-childs node))))
 	       (if (not next-node)
