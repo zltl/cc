@@ -75,7 +75,7 @@
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
-      (http:request-set-output-headers req h))    
+      (http:request-set-output-headers req h))
     (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
 (defun handle-varname2 (req)
   (log:info "/text/:xxx/:yyy => return 222")
@@ -85,7 +85,7 @@
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
-      (http:request-set-output-headers req h))    
+      (http:request-set-output-headers req h))
     (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
 (defun handle-varname1 (req)
   (log:info "/text/:xxx => return 222")
@@ -94,7 +94,7 @@
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
-      (http:request-set-output-headers req h))    
+      (http:request-set-output-headers req h))
     (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
 (defun handle-varname-jump (req)
   (log:info "/jump/:xxx/foo => return 222")
@@ -103,7 +103,7 @@
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
-      (http:request-set-output-headers req h))    
+      (http:request-set-output-headers req h))
     (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
 (defun handle-matchall (req)
   (log:info "/mall/*rest => return 222")
@@ -112,7 +112,7 @@
     (log:info "param: ~a" params)
     (let ((h (http:make-keyvals)))
       (http:keyvals-add h "Content-Type" "application/json")
-      (http:request-set-output-headers req h))    
+      (http:request-set-output-headers req h))
     (http:request-reply-string req http:+ok+ (json:encode-json-to-string params))))
 
 (defun http-simple-server ()
@@ -135,14 +135,16 @@
       (http:mux-get mux "/text/:xxx" #'handle-varname1)
       (http:mux-get mux "/jump/:xxx/foo" #'handle-varname-jump)
       (http:mux-get mux "/mall/*rest" #'handle-matchall)
-      
-      ;; print
+
+      ;; print mux list
       (http:mux-dfs-print (http:mux-root mux) nil)
-      
-      ;; bind server
+
+      ;; bind server with address and port
       (http:server-bind srv
 			(net:sockaddr-from-string "0.0.0.0:8899"))
+
       ;; the default content type
       (http:server-set-default-content-type srv "text/html")
 
+      ;; set MUX to server SRV as request handle
       (http:server-set-cb srv :cb (http:mux-serve mux)))))
