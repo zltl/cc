@@ -10,10 +10,10 @@
 
 (defclass ip ()
   ((family :accessor ip-family :initarg :ip-family :initform nil
-	   :documentation "IP family: 'V4 or 'V6")
+           :documentation "IP family: 'V4 or 'V6")
 
    (addr :accessor ip-addr :initarg :ip-addr :initform nil
-	 :documentation "The addr octet array"))
+         :documentation "The addr octet array"))
 
   (:documentation
    "The ip address"))
@@ -60,42 +60,42 @@
   "Convert ipv4/ipv6 address to string"
   (and (ip-addr ip)
        (let ((arr-len 4)
-	     (af +AF-INET+)
-	     (res nil))
-	 (if (eql 'V6 (ip-family ip))
-	     (progn (setf arr-len 16)
-		    (setf af +AF-INET6+)))
+             (af +AF-INET+)
+             (res nil))
+         (if (eql 'V6 (ip-family ip))
+             (progn (setf arr-len 16)
+                    (setf af +AF-INET6+)))
 
-	 (with-foreign-pointer-as-string (str +max-ip-string-len+)
-	   (with-foreign-object (c-ip :uint8 arr-len)
-	     ;; set array value as ip
-	     (dotimes (i arr-len)
-	       (setf (mem-aref c-ip :uint8 i) (elt (ip-addr ip) i)))
+         (with-foreign-pointer-as-string (str +max-ip-string-len+)
+           (with-foreign-object (c-ip :uint8 arr-len)
+             ;; set array value as ip
+             (dotimes (i arr-len)
+               (setf (mem-aref c-ip :uint8 i) (elt (ip-addr ip) i)))
 
-	     ;; call inet_ntop
-	     (setf res (cc-libevent:evutil-inet-ntop af c-ip str +max-ip-string-len+)))))))
+             ;; call inet_ntop
+             (setf res (cc-libevent:evutil-inet-ntop af c-ip str +max-ip-string-len+)))))))
 
 (defun ip-from-c-addr (ptr af-family)
   "Convert C inet_addr or inet6_addr to IP instance."
   (let ((arr-len 4)
-	(addr nil)
-	(family 'V4))
+        (addr nil)
+        (family 'V4))
     (if (eql af-family +AF-INET6+)
-	(progn (setf arr-len 16)
-	       (setf family 'V6)))
+        (progn (setf arr-len 16)
+               (setf family 'V6)))
     (setf addr (make-array arr-len))
-    
-    (dotimes (i arr-len)      
+
+    (dotimes (i arr-len)
       (setf (elt addr i) (mem-aref ptr :uint8 i)))
     (make-instance 'ip :ip-family family :ip-addr addr)))
 
 (defun ip-copy-to-c-addr (mip ptr)
   "Convert IP to C inet_addr or inet6_addr"
   (let ((arr-len (ip-len mip))
-	(addr (ip-addr mip)))
+        (addr (ip-addr mip)))
 
     (setf addr (make-array arr-len))
-    (dotimes (i arr-len)      
+    (dotimes (i arr-len)
       (setf (mem-aref ptr :uint8 i) (elt addr i)))))
 
 
@@ -132,20 +132,20 @@
 (defun ip-from-string (str)
   "Convert ipv4/ipv6 string to IP instance."
   (let ((af +AF-INET+)
-	(family 'V4)
-	(arr-len 4)
-	(addr nil)
-	(res 0))
+        (family 'V4)
+        (arr-len 4)
+        (addr nil)
+        (res 0))
     (if (not (ipv4-address-p str))
-	(progn (setf af +AF-INET6+)
-	       (setf arr-len 16)
-	       (setf family 'V6)))
+        (progn (setf af +AF-INET6+)
+               (setf arr-len 16)
+               (setf family 'V6)))
 
     (with-foreign-object (c-ip :uint8 arr-len)
       (with-foreign-string (c-str str)
-	(setf res (cc-libevent:evutil-inet-pton af c-str c-ip)))
+        (setf res (cc-libevent:evutil-inet-pton af c-str c-ip)))
       (if (eql res 1)
-	  (ip-from-c-addr c-ip af)))))
+          (ip-from-c-addr c-ip af)))))
 
 (defmacro with-c-ip ((var ip) &body body)
   "Convert ip to C then run body"
@@ -157,19 +157,19 @@
 
 (defclass sockaddr ()
     ((ip :accessor sockaddr-ip :initarg :ip :initform nil
-	 :documentation "The ip address of socket")
-     
+         :documentation "The ip address of socket")
+
      (port :accessor sockaddr-port :initarg :port :initform nil
-	   :documentation "Port of TCP/UDP")))
+           :documentation "Port of TCP/UDP")))
 
 (defcfun (htons "htons") :uint16
   (s :uint16))
 
 (defun sockaddr-to-string (sock)
   (concatenate 'string
-	       (ip-to-string (sockaddr-ip sock))
-	       ":"
-	       (write-to-string (sockaddr-port sock))))
+               (ip-to-string (sockaddr-ip sock))
+               ":"
+               (write-to-string (sockaddr-port sock))))
 
 (defmacro with-sockaddr-c ((sock sock-c sock-c-len) &body body)
   "Convert sockaddr 'sock' to sockaddr_in 'sock-c' C object and run body."
@@ -177,44 +177,44 @@
      (with-foreign-object (socklen-ptr :int 1)
        (setf (mem-aref socklen-ptr :int 0) socklen)
        (with-foreign-string (str (sockaddr-to-string sock))
-	 (cc-libevent:evutil-parse-sockaddr-port str ,sock-c socklen-ptr)
-	 (setf ,sock-c-len (mem-aref socklen-ptr :int 0))
-	 ,@body))))
+         (cc-libevent:evutil-parse-sockaddr-port str ,sock-c socklen-ptr)
+         (setf ,sock-c-len (mem-aref socklen-ptr :int 0))
+         ,@body))))
 
 (defmacro with-sockaddr-c-from-string ((sostr sock-c sock-c-len) &body body)
   "Convert sockaddr 'sock' to sockaddr_in 'sock-c' C object and run body."
   (let ((str-c (gensym))
-	(socklen-c (gensym))
-	(socklen-ptr-c (gensym)))
+        (socklen-c (gensym))
+        (socklen-ptr-c (gensym)))
     `(with-foreign-pointer (,sock-c (+ +sockaddr-in-len+ 100))
        (with-foreign-object (,socklen-ptr-c :int 1)
-	 (setf (mem-ref ,socklen-ptr-c :int) (+ +sockaddr-in-len+ 100))
-	 (with-foreign-string (,str-c ,sostr)
-	   (cc-libevent:evutil-parse-sockaddr-port ,str-c ,sock-c ,socklen-ptr-c)
-	   (setf ,sock-c-len (mem-ref ,socklen-ptr-c :int))
-	   ,@body)))))
+         (setf (mem-ref ,socklen-ptr-c :int) (+ +sockaddr-in-len+ 100))
+         (with-foreign-string (,str-c ,sostr)
+           (cc-libevent:evutil-parse-sockaddr-port ,str-c ,sock-c ,socklen-ptr-c)
+           (setf ,sock-c-len (mem-ref ,socklen-ptr-c :int))
+           ,@body)))))
 
 (defun sockaddr-from-c (ptr)
   "Create sockaddr object from c sockaddr_in"
   (let ((osin_family nil)
-	(inptr nil)
-	(sptr nil)
-	(port 0))
+        (inptr nil)
+        (sptr nil)
+        (port 0))
 
     (with-foreign-slots ((sin_family sin_port sin_addr) ptr (:struct sockaddr-in))
       (setf osin_family sin_family)
       (setf port (htons sin_port)))
     (let
-	((mip
-	   (if (eql osin_family +AF-INET+)
-	       ;; ipv4	
-	       (let* ((sin-addr (foreign-slot-pointer ptr '(:struct sockaddr-in) 'sin_addr))
-		      (s-addr (foreign-slot-pointer sin-addr '(:struct in-addr-t) 's_addr)))
-		 (ip-from-c-addr s-addr osin_family))
-	       ;; ipv6
-	       (let* ((sin6-addr (foreign-slot-pointer ptr '(:struct sockaddr-in6) 'sin6_addr))
-		      (addr (foreign-slot-pointer sin6-addr '(:struct in6-addr) 'addr)))
-		 (ip-from-c-addr addr osin_family)))))
+        ((mip
+           (if (eql osin_family +AF-INET+)
+               ;; ipv4
+               (let* ((sin-addr (foreign-slot-pointer ptr '(:struct sockaddr-in) 'sin_addr))
+                      (s-addr (foreign-slot-pointer sin-addr '(:struct in-addr-t) 's_addr)))
+                 (ip-from-c-addr s-addr osin_family))
+               ;; ipv6
+               (let* ((sin6-addr (foreign-slot-pointer ptr '(:struct sockaddr-in6) 'sin6_addr))
+                      (addr (foreign-slot-pointer sin6-addr '(:struct in6-addr) 'addr)))
+                 (ip-from-c-addr addr osin_family)))))
       (make-instance 'sockaddr :ip mip :port port))))
 
 (defun sockaddr-from-string (str)
